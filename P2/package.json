@@ -1,0 +1,21 @@
+{
+  "name": "auth-backend-practica2",
+  "version": "1.0.0",
+  "description": "Modulo de autenticacion y autorizacion con JWT, cookies HTTP-only y cifrado AES",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js",
+    "keys": "mkdir -p keys && openssl genrsa -out keys/jwt_private.pem 2048 && openssl rsa -in keys/jwt_private.pem -pubout -out keys/jwt_public.pem"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.5"
+  }
+}
