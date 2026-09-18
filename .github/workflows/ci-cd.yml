@@ -236,6 +236,18 @@ jobs:
 
       - name: Desplegar con Helm
         run: |
+          # El chart crea el namespace por si mismo (requisito de la P5).
+          # Pero Helm escribe el Secret del release ANTES de aplicar las
+          # plantillas, y para eso el namespace ya debe existir. Se crea
+          # con las anotaciones de propiedad de Helm para que, al aplicar
+          # el chart, lo adopte en vez de fallar por objeto duplicado.
+          kubectl create namespace sa-p7 --dry-run=client -o yaml | \
+            kubectl label --local -f - app.kubernetes.io/managed-by=Helm -o yaml | \
+            kubectl annotate --local -f - \
+              meta.helm.sh/release-name=sa-platform \
+              meta.helm.sh/release-namespace=sa-p7 -o yaml | \
+            kubectl apply -f -
+
           helm upgrade --install sa-platform ./P5/charts/sa-platform \
             --namespace sa-p7 \
             -f P5/charts/sa-platform/values.yaml \
