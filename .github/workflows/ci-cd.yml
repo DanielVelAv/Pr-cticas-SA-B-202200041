@@ -208,6 +208,9 @@ jobs:
               password: "ci-rabbitmq-pass"
           EOF
 
+      - name: Descargar las dependencias del chart (postgresql, rabbitmq)
+        run: helm dependency build ./P5/charts/sa-platform
+
       - name: Desplegar con Helm
         run: |
           helm upgrade --install sa-platform ./P5/charts/sa-platform \
