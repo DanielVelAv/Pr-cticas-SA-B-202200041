@@ -237,7 +237,7 @@ jobs:
       - name: Desplegar con Helm
         run: |
           helm upgrade --install sa-platform ./P5/charts/sa-platform \
-            --namespace sa-p7 --create-namespace \
+            --namespace sa-p7 \
             -f P5/charts/sa-platform/values.yaml \
             -f P5/charts/sa-platform/values-kind.yaml \
             -f secretos-ci.yaml \
