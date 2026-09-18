@@ -79,7 +79,9 @@ jobs:
   # =====================================================================
   # ETAPA 2 — DOCKERIZACION
   # Construye cada imagen y la publica en GitHub Container Registry.
-  # Usa el GITHUB_TOKEN integrado: no requiere ningun secret adicional.
+  # Publica con un PAT propio (secret GHCR_TOKEN) en vez del GITHUB_TOKEN
+  # integrado, para evitar restricciones de escritura de paquetes a nivel
+  # de organizacion que el token automatico no puede evadir.
   # Solo corre si las dos etapas de test anteriores pasaron.
   # =====================================================================
   build-and-push:
@@ -110,14 +112,20 @@ jobs:
       - name: Descargar el codigo
         uses: actions/checkout@v4
 
-      - name: Configurar Buildx
+      - name: Configurar Buildx (necesario para exportar cache tipo GHA)
         uses: docker/setup-buildx-action@v3
 
-      - name: Configurar Buildx
+      - name: Autenticar con GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
+          # Se usa un Personal Access Token propio (secret GHCR_TOKEN) en
+          # vez del GITHUB_TOKEN automatico: si el repositorio pertenece
+          # a una organizacion, esta puede restringir a nivel de
+          # organizacion que el token automatico cree o escriba paquetes,
+          # sin importar el permiso "Read and write" fijado a nivel de
+          # repositorio. Un PAT propio evita esa restriccion.
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Calcular metadatos de la imagen (tags)
@@ -195,11 +203,21 @@ jobs:
 
       - name: Generar secretos efimeros para esta ejecucion
         run: |
-          cat > secretos-ci.yaml << 'EOF'
+          # AES_KEY y BLIND_INDEX_KEY: 32 bytes aleatorios en base64.
+          # El chart exige que sean DISTINTAS entre si (ver el mensaje
+          # del `required` en templates/secret.yaml). Se generan frescas
+          # en cada corrida en vez de fijarlas aqui: son credenciales
+          # efimeras de un cluster que se destruye al terminar el job,
+          # y asi no queda ninguna clave escrita en el repositorio.
+          AES_KEY=$(openssl rand -base64 32)
+          BLIND_INDEX_KEY=$(openssl rand -base64 32)
+
+          cat > secretos-ci.yaml << EOF
           secrets:
             postgresPassword: "ci-postgres-pass"
             rabbitmqPassword: "ci-rabbitmq-pass"
-            jwtAlgorithm: "RS256"
+            aesKey: "${AES_KEY}"
+            blindIndexKey: "${BLIND_INDEX_KEY}"
           postgresql:
             auth:
               postgresPassword: "ci-postgres-pass"
@@ -209,6 +227,11 @@ jobs:
           EOF
 
       - name: Descargar las dependencias del chart (postgresql, rabbitmq)
+        # Chart.yaml declara postgresql y rabbitmq como dependencias
+        # externas (charts de Bitnami). Los .tgz resultantes estan en
+        # .gitignore a proposito (no se versionan binarios de terceros),
+        # asi que cada ejecucion del pipeline debe descargarlos de nuevo
+        # antes de poder instalar el chart.
         run: helm dependency build ./P5/charts/sa-platform
 
       - name: Desplegar con Helm
