@@ -74,7 +74,7 @@ jobs:
 
       - name: Ejecutar pruebas unitarias (test)
         working-directory: P5/services/${{ matrix.servicio }}
-        run: pytest tests/ -v
+        run: python -m pytest tests/ -v
 
   # =====================================================================
   # ETAPA 2 — DOCKERIZACION
