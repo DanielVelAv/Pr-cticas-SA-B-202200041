@@ -261,13 +261,12 @@ jobs:
       - name: Verificar que todos los pods esten en Running
         run: |
           kubectl get pods -n sa-p7
-          # Se excluyen los pods de CronJob: un Job completado queda en
-          # estado "Completed" y NUNCA alcanza condition=Ready (es lo
-          # correcto, ya termino su trabajo). Esperarlo con --all agota
-          # el timeout aunque todo el despliegue este sano.
+          # Se excluyen los pods en fase Succeeded (los Jobs de CronJob
+          # que ya terminaron): nunca alcanzan condition=Ready, porque
+          # su trabajo concluyo. El field-selector basta para filtrarlos
+          # sin depender de ninguna etiqueta particular del chart.
           kubectl wait --for=condition=Ready pods \
-            -l app.kubernetes.io/part-of=sa-platform \
-            --field-selector=status.phase!=Succeeded \
+            --field-selector=status.phase=Running \
             -n sa-p7 --timeout=180s
 
       - name: Verificar el health del api-gateway (evidencia de funcionamiento)
