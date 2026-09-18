@@ -195,10 +195,14 @@ jobs:
 
       - name: Generar secretos efimeros para esta ejecucion
         run: |
+          AES_KEY_B64="$(openssl rand -base64 32 | tr -d '\n')"
+          BLIND_INDEX_KEY_B64="$(openssl rand -base64 32 | tr -d '\n')"
           cat > secretos-ci.yaml << 'EOF'
           secrets:
             postgresPassword: "ci-postgres-pass"
             rabbitmqPassword: "ci-rabbitmq-pass"
+            aesKey: "__AES_KEY_B64__"
+            blindIndexKey: "__BLIND_INDEX_KEY_B64__"
             jwtAlgorithm: "RS256"
           postgresql:
             auth:
@@ -207,6 +211,8 @@ jobs:
             auth:
               password: "ci-rabbitmq-pass"
           EOF
+          sed -i "s|__AES_KEY_B64__|${AES_KEY_B64}|g" secretos-ci.yaml
+          sed -i "s|__BLIND_INDEX_KEY_B64__|${BLIND_INDEX_KEY_B64}|g" secretos-ci.yaml
 
       - name: Descargar las dependencias del chart (postgresql, rabbitmq)
         run: helm dependency build ./P5/charts/sa-platform
