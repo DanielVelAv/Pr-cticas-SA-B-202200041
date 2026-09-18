@@ -1,0 +1,111 @@
+@startuml componentes
+' Diagrama de componentes UML — Practica 3, Software Avanzado USAC
+' Notacion UML 2: interfaces provistas (bola) y requeridas (socket punteado)
+
+left to right direction
+
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam backgroundColor #F6F5F2
+skinparam defaultFontName "Helvetica"
+skinparam ArrowColor #5A6472
+skinparam nodesep 22
+skinparam ranksep 55
+skinparam InterfaceBackgroundColor #FFFFFF
+skinparam InterfaceBorderColor #6B5CA5
+skinparam component {
+  BackgroundColor #E7F5EF
+  BorderColor #2F9E7A
+  FontColor #1B2430
+}
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #B9B5AA
+}
+skinparam database {
+  BackgroundColor #FFFFFF
+  BorderColor #B9B5AA
+}
+skinparam queue {
+  BackgroundColor #EDE9F5
+  BorderColor #6B5CA5
+}
+
+actor "Usuario\nmaker / checker / authorizer" as U
+
+component "API Gateway" as GW #EDE9F5
+
+package "Identidad y acceso" {
+  component "OAuth Corporativo\ntoken 12 h" as OAuth #FBF1E0
+  component "Servicio de Autorizacion\n(reutilizado de la Practica 2)" as Authz #FBF1E0
+}
+
+package "Microservicios de negocio" {
+  component "ms-lotes" as Lotes
+  component "ms-aprobaciones" as Aprob
+  component "ms-notificaciones" as Notif
+  database "BD lotes" as DBL
+  database "BD aprobaciones" as DBA
+  database "BD notificaciones" as DBN
+}
+
+queue "RabbitMQ" as MQ
+
+package "Sistemas externos" {
+  component "Almacenamiento S3" as S3 #FBEAE7
+  component "Core Bancario" as Core #FBEAE7
+  component "Servidor SMTP" as SMTP #FBEAE7
+}
+
+' ---------- Interfaces provistas ----------
+interface "IValidacionToken" as IToken
+interface "IEvaluarPermiso"  as IPerm
+interface "ILotes"           as ILotes
+interface "IAprobaciones"    as IAprob
+interface "IAlmacenamiento"  as IStore
+interface "ICoreBancario"    as ICore
+interface "IEnvioCorreo"     as IMail
+
+IToken - OAuth
+IPerm  - Authz
+ILotes - Lotes
+IAprob - Aprob
+IStore - S3
+ICore  - Core
+IMail  - SMTP
+
+' ---------- Entrada ----------
+U   --> GW : HTTPS
+
+' ---------- Interfaces requeridas por el Gateway ----------
+GW ..> IToken : valida firma
+GW ..> IPerm  : permiso de ruta
+GW ..> ILotes
+GW ..> IAprob
+
+' ---------- Interfaces requeridas por los servicios ----------
+Lotes ..> IStore : PUT / URL prefirmada
+Aprob ..> IPerm  : rol del paso actual
+Aprob ..> ICore  : REST + idempotency-key
+Notif ..> IMail
+
+' ---------- Persistencia: una BD por servicio ----------
+Lotes --> DBL
+Aprob --> DBA
+Notif --> DBN
+
+' ---------- Mensajeria asincrona ----------
+Lotes --> MQ    : publica LoteValidado
+MQ    --> Aprob : entrega LoteValidado
+Aprob --> MQ    : publica LoteAprobado
+MQ    --> Notif : entrega LoteAprobado
+
+note bottom of MQ
+  Todos los componentes emiten logs
+  estructurados al stack ELK,
+  correlacionados por X-Correlation-Id.
+  Se omiten esas aristas por legibilidad
+  (preocupacion transversal).
+end note
+
+@enduml

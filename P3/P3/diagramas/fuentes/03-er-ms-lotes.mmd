@@ -1,0 +1,46 @@
+erDiagram
+    LOTE ||--o{ TRANSACCION : "contiene"
+    TRANSACCION ||--o{ RESULTADO_VALIDACION : "genera"
+    REGLA_VALIDACION ||--o{ RESULTADO_VALIDACION : "evalua"
+
+    LOTE {
+        uuid id PK
+        varchar nombre_archivo
+        varchar ruta_s3
+        char hash_sha256
+        varchar estado
+        int total_transacciones
+        decimal monto_total
+        varchar usuario_carga_id
+        timestamptz fecha_carga
+    }
+
+    TRANSACCION {
+        uuid id PK
+        uuid lote_id FK
+        varchar cuenta_origen
+        varchar cuenta_destino
+        decimal monto
+        char moneda
+        varchar beneficiario_nombre
+        varchar beneficiario_email
+        varchar referencia
+        varchar estado
+    }
+
+    RESULTADO_VALIDACION {
+        uuid id PK
+        uuid transaccion_id FK
+        varchar regla_codigo FK
+        varchar resultado
+        varchar mensaje
+        timestamptz fecha
+    }
+
+    REGLA_VALIDACION {
+        varchar codigo PK
+        varchar descripcion
+        varchar tipo
+        jsonb parametros
+        boolean activa
+    }

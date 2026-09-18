@@ -1,0 +1,29 @@
+erDiagram
+    PLANTILLA ||--o{ NOTIFICACION : "da formato a"
+
+    NOTIFICACION {
+        uuid id PK
+        uuid lote_id "referencia externa, sin FK"
+        uuid transaccion_id "referencia externa, sin FK"
+        varchar destinatario_email
+        varchar plantilla_codigo FK
+        varchar estado
+        int intentos
+        varchar proveedor_message_id
+        timestamptz fecha_envio
+    }
+
+    PLANTILLA {
+        varchar codigo PK
+        varchar asunto
+        text cuerpo_html
+        char idioma
+        int version
+        boolean activa
+    }
+
+    EVENTO_PROCESADO {
+        uuid evento_id PK
+        varchar tipo
+        timestamptz fecha_procesado
+    }

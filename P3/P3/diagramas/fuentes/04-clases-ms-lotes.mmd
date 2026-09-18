@@ -1,0 +1,76 @@
+classDiagram
+    direction LR
+
+    class Lote {
+        +UUID id
+        +String nombreArchivo
+        +String rutaS3
+        +String hashSha256
+        +EstadoLote estado
+        +int totalTransacciones
+        +BigDecimal montoTotal
+        +marcarValidado() void
+        +marcarRechazado() void
+    }
+
+    class Transaccion {
+        +UUID id
+        +String cuentaOrigen
+        +String cuentaDestino
+        +BigDecimal monto
+        +String beneficiarioEmail
+        +EstadoTransaccion estado
+        +esValida() boolean
+    }
+
+    class ResultadoValidacion {
+        +UUID id
+        +String reglaCodigo
+        +boolean aprobada
+        +String mensaje
+    }
+
+    class ReglaValidacion {
+        <<interface>>
+        +codigo() String
+        +validar(Transaccion) ResultadoValidacion
+    }
+
+    class ReglaSaldoDisponible {
+        +validar(Transaccion) ResultadoValidacion
+    }
+    class ReglaLimiteTransaccion {
+        +validar(Transaccion) ResultadoValidacion
+    }
+    class ReglaCuentaValida {
+        +validar(Transaccion) ResultadoValidacion
+    }
+    class ReglaPrevencionFraude {
+        +validar(Transaccion) ResultadoValidacion
+    }
+
+    class ValidadorLotes {
+        -List~ReglaValidacion~ reglas
+        +validar(Lote) InformeValidacion
+    }
+
+    class AlmacenamientoArchivos {
+        <<interface>>
+        +guardar(byte[], String) String
+        +urlDescarga(String) String
+    }
+    class AlmacenamientoS3 {
+        +guardar(byte[], String) String
+        +urlDescarga(String) String
+    }
+
+    Lote "1" *-- "0..*" Transaccion
+    Transaccion "1" --> "0..*" ResultadoValidacion
+    ReglaValidacion <|.. ReglaSaldoDisponible
+    ReglaValidacion <|.. ReglaLimiteTransaccion
+    ReglaValidacion <|.. ReglaCuentaValida
+    ReglaValidacion <|.. ReglaPrevencionFraude
+    ValidadorLotes o-- "1..*" ReglaValidacion
+    ValidadorLotes ..> Lote
+    AlmacenamientoArchivos <|.. AlmacenamientoS3
+    Lote ..> AlmacenamientoArchivos

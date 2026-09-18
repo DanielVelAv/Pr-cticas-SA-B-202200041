@@ -1,0 +1,19 @@
+{{/*
+El namespace lo crea el propio chart, no `kubectl create namespace`
+(requisito del enunciado). Helm ordena los recursos e instala los
+Namespace antes que todo lo demas, asi que el resto de objetos ya
+encuentran el namespace existente.
+
+Se instala con  --namespace sa-p5  y SIN  --create-namespace:
+si se usara esa bandera, Helm lo crearia por fuera del release y
+chocaria con este manifiesto.
+*/}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.global.namespace | quote }}
+  labels:
+    {{- include "sa-platform.etiquetas" (dict "raiz" . "componente" "namespace") | nindent 4 }}
+    # Esta etiqueta la usan las NetworkPolicies para identificar el
+    # namespace propio frente a los demas del cluster.
+    sa-platform/namespace: {{ .Values.global.namespace | quote }}

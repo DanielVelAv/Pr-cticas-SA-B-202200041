@@ -1,2 +1,35 @@
+node_modules/
+npm-debug.log*
+.npm/
 
-P1/.env
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+venv/
+.venv/
+
+# Credenciales y secretos — NUNCA deben versionarse
+secretos.yaml
+secretos-ci.yaml
+keys/*.pem
+keys/jwt_private.pem
+keys/jwt_public.pem
+
+# Helm
+Chart.lock
+charts/**/charts/*.tgz
+
+# Kubernetes / kubeconfig local
+kubeconfig
+*.kubeconfig
+
+# Sistema operativo / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log

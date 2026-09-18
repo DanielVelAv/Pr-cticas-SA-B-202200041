@@ -1,0 +1,55 @@
+sequenceDiagram
+    autonumber
+    actor MK as Usuario (maker)
+    participant W as Portal Web
+    participant GW as API Gateway
+    participant OA as OAuth Corporativo
+    participant AZ as Autorizacion (P2)
+    participant L as ms-lotes
+    participant S3 as Almacenamiento S3
+    participant DB as BD lotes
+    participant MQ as RabbitMQ
+
+    MK->>W: selecciona archivo CSV
+    W->>GW: POST /api/lotes (multipart + token OAuth)
+
+    rect rgb(251, 241, 224)
+    Note over GW,AZ: Autenticacion y autorizacion
+    GW->>OA: valida firma y expiracion del token
+    OA-->>GW: token valido (sub, identidad)
+    GW->>AZ: evaluarPermiso(sub, "lotes:cargar")
+    AZ-->>GW: permitido
+    end
+
+    GW->>L: POST /lotes (X-Correlation-Id)
+    L->>S3: PUT archivo original
+    S3-->>L: ruta + ETag
+    L->>L: calcula SHA-256 del archivo
+    L->>DB: INSERT Lote (estado = CARGADO)
+    L-->>GW: 202 Accepted (loteId)
+    GW-->>W: 202 loteId
+    W-->>MK: "lote recibido, validando"
+
+    rect rgb(231, 245, 239)
+    Note over L,DB: Validacion asincrona de reglas de negocio
+    L->>L: parsea CSV a transacciones
+    loop por cada transaccion
+        L->>L: ReglaSaldoDisponible
+        L->>L: ReglaLimiteTransaccion
+        L->>L: ReglaCuentaValida
+        L->>L: ReglaPrevencionFraude
+        L->>DB: INSERT Transaccion + ResultadoValidacion
+    end
+    end
+
+    alt todas las transacciones son validas
+        L->>DB: UPDATE Lote estado = VALIDADO
+        L->>MQ: publica LoteValidado (loteId, montoTotal)
+    else al menos una transaccion invalida
+        L->>DB: UPDATE Lote estado = RECHAZADO
+        Note over L: no se publica evento.<br/>el lote no entra a aprobacion
+    end
+
+    MK->>GW: GET /api/lotes/{loteId}
+    GW->>L: consulta estado e informe
+    L-->>MK: estado + errores de validacion por transaccion

@@ -2,7 +2,7 @@
 
 Software Avanzado · Universidad de San Carlos de Guatemala · Segundo Semestre 2026
 
-M�dulo de registro y login con JWT almacenado en cookies HTTP-only, cifrado AES-256-GCM de los datos sensibles, y autorización resuelta por un microservicio independiente al que el backend consulta mediante un ciclo de reintentos con backoff.
+Módulo de registro y login con JWT almacenado en cookies HTTP-only, cifrado AES-256-GCM de los datos sensibles, y autorización resuelta por un microservicio independiente al que el backend consulta mediante un ciclo de reintentos con backoff.
 
 Este proyecto se limita deliberadamente a lo que exigen el enunciado y la rúbrica. No incluye mecanismos de seguridad adicionales (revocación de sesión, mitigación de enumeración de cuentas, rotación de llaves) que no están pedidos en ningún punto de la práctica; donde existía esa tentación, se documenta como limitación en la sección 8 en vez de implementarse sin justificación.
 
@@ -398,26 +398,3 @@ Se documentan en vez de ocultarse:
 6. **Sin límite de tasa** en registro y login.
 7. **El esquema se aplica manualmente** con `db/schema.sql`, sin migraciones versionadas.
 8. **Sin rotación de llaves de cifrado.** Perder `AES_KEY` inutiliza la base. No está pedido en el enunciado y añadirlo hubiera significado versionar cada blob cifrado sin necesidad real en el alcance de esta práctica.
-� que cada servicio debe arrancarse desde su carpeta |
-| **React + Vite** | Recarga instantánea; `credentials: 'include'` sencillo | Al correr en otro origen obliga a configurar CORS con cuidado |
-
-### Decisiones descartadas
-
-- **Una librería de reintentos.** Funcionaría, pero escondería en un decorador justo la lógica que el enunciado pide implementar. Está escrita a mano para poder inspeccionarla y modificarla.
-- **HS256 para el JWT.** Más simple, pero obligaría a compartir el mismo secreto entre los dos servicios y el desacoplamiento sería solo aparente.
-- **Un ORM.** La Práctica 1 usó `pg` directo y se mantiene por continuidad; para una sola tabla no compensa.
-- **Tabla de sesiones.** `token_version` cubre el caso real con una columna en vez de una tabla más un proceso de limpieza. Limitación aceptada: no se puede cerrar una sesión específica dejando las demás vivas.
-
----
-
-## 8. Limitaciones conocidas
-
-Se documentan en vez de ocultarse:
-
-1. **Sin circuit breaker.** Con el microservicio caído, cada petición paga el presupuesto completo de reintentos (~1 s con la configuración por defecto) antes del `503`.
-2. **El índice ciego filtra igualdad.** Inherente a la técnica y necesario para el `UNIQUE`.
-3. **El microservicio no conoce `token_version`.** No puede saber si un token fue revocado por logout; esa verificación la hace el backend antes de consultarlo.
-4. **Catálogo de permisos duplicado** en los dos servicios, por diseño. Si divergen, el microservicio responde `PERMISO_DESCONOCIDO` en lugar de negar en silencio, pero falta una prueba que compare ambos catálogos.
-5. **Sin límite de tasa** en registro y login. El señuelo de tiempo mitiga la enumeración por temporización, no el abuso por volumen.
-6. **El esquema se aplica manualmente** con `db/schema.sql`, sin migraciones versionadas.
-7. **Perder `AES_KEY` inutiliza la base.** No hay mecanismo de respaldo de llaves.

@@ -1,0 +1,55 @@
+erDiagram
+    POLITICA_APROBACION ||--o{ SOLICITUD_APROBACION : "rige"
+    SOLICITUD_APROBACION ||--o{ PASO_APROBACION : "se resuelve en"
+    SOLICITUD_APROBACION ||--o| ENVIO_CORE : "produce"
+
+    SOLICITUD_APROBACION {
+        uuid id PK
+        uuid lote_id "referencia externa, sin FK"
+        uuid politica_id FK
+        decimal monto_total
+        int total_transacciones
+        varchar estado
+        int paso_actual
+        timestamptz fecha_creacion
+        timestamptz fecha_cierre
+    }
+
+    PASO_APROBACION {
+        uuid id PK
+        uuid solicitud_id FK
+        int numero_paso
+        varchar rol_requerido
+        varchar usuario_id
+        varchar decision
+        varchar comentario
+        timestamptz fecha_decision
+    }
+
+    ENVIO_CORE {
+        uuid id PK
+        uuid solicitud_id FK
+        uuid idempotency_key UK
+        varchar estado
+        int intentos
+        varchar codigo_respuesta
+        jsonb respuesta_core
+        timestamptz fecha_envio
+    }
+
+    POLITICA_APROBACION {
+        uuid id PK
+        decimal monto_minimo
+        decimal monto_maximo
+        jsonb roles_por_paso
+        boolean activa
+    }
+
+    EVENTO_OUTBOX {
+        uuid id PK
+        varchar tipo
+        jsonb payload
+        boolean publicado
+        timestamptz fecha_creacion
+        timestamptz fecha_publicacion
+    }

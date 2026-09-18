@@ -1,0 +1,56 @@
+classDiagram
+    direction LR
+
+    class Notificacion {
+        +UUID id
+        +UUID loteId
+        +String destinatarioEmail
+        +EstadoNotificacion estado
+        +int intentos
+        +String proveedorMessageId
+        +marcarEnviada(String) void
+        +marcarFallida() void
+    }
+
+    class Plantilla {
+        +String codigo
+        +String asunto
+        +String cuerpoHtml
+        +int version
+        +renderizar(Map) String
+    }
+
+    class EventoProcesado {
+        +UUID eventoId
+        +String tipo
+        +Instant fechaProcesado
+    }
+
+    class ServicioNotificaciones {
+        +procesarLoteAprobado(EventoLoteAprobado) void
+        -yaProcesado(UUID) boolean
+    }
+
+    class ProveedorCorreo {
+        <<interface>>
+        +enviar(Notificacion, String) String
+    }
+    class ProveedorCorreoSmtp {
+        +enviar(Notificacion, String) String
+    }
+
+    class EstadoNotificacion {
+        <<enumeration>>
+        PENDIENTE
+        ENVIADA
+        FALLIDA
+        DESCARTADA
+    }
+
+    Plantilla "1" --> "0..*" Notificacion
+    Notificacion --> EstadoNotificacion
+    ServicioNotificaciones ..> Notificacion
+    ServicioNotificaciones ..> EventoProcesado
+    ServicioNotificaciones ..> Plantilla
+    ProveedorCorreo <|.. ProveedorCorreoSmtp
+    ServicioNotificaciones ..> ProveedorCorreo

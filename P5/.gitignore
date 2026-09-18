@@ -1,0 +1,15 @@
+# Credenciales y llaves: NUNCA se versionan (requisito de la practica)
+secretos.yaml
+keys/*.pem
+*.pem
+
+# Dependencias resueltas por helm dependency update
+charts/sa-platform/charts/*.tgz
+charts/sa-platform/Chart.lock
+
+# Artefactos de ejecucion
+node_modules/
+__pycache__/
+*.pyc
+resultados-carga.json
+.env

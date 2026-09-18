@@ -1,0 +1,616 @@
+{
+  "info": {
+    "name": "Practica 4 - Sistema de Microservicios Bancarios",
+    "description": "Colección que cubre los 5 componentes: API Gateway, ms-auth (Node), ms-lotes (Node, REST+GraphQL), ms-aprobaciones (Python, REST+GraphQL) y ms-notificaciones (Python, REST). Todas las peticiones pasan por el Gateway (localhost:8080) salvo la carpeta 'Acceso directo a servicios', que sirve para inspeccionar cada uno por separado durante la calificación.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "gateway_url", "value": "http://localhost:8080" },
+    { "key": "auth_url", "value": "http://localhost:3001" },
+    { "key": "lotes_url", "value": "http://localhost:3002" },
+    { "key": "aprobaciones_url", "value": "http://localhost:3003" },
+    { "key": "notificaciones_url", "value": "http://localhost:3004" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_maker", "value": "" },
+    { "key": "token_checker", "value": "" },
+    { "key": "token_authorizer", "value": "" },
+    { "key": "lote_id", "value": "1" },
+    { "key": "solicitud_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "0. Salud de los 5 componentes",
+      "item": [
+        {
+          "name": "Health API Gateway",
+          "request": { "method": "GET", "url": "{{gateway_url}}/health" }
+        },
+        {
+          "name": "Health ms-auth (directo)",
+          "request": { "method": "GET", "url": "{{auth_url}}/health" }
+        },
+        {
+          "name": "Health ms-lotes (directo)",
+          "request": { "method": "GET", "url": "{{lotes_url}}/health" }
+        },
+        {
+          "name": "Health ms-aprobaciones (directo)",
+          "request": { "method": "GET", "url": "{{aprobaciones_url}}/health" }
+        },
+        {
+          "name": "Health ms-notificaciones (directo)",
+          "request": { "method": "GET", "url": "{{notificaciones_url}}/health" }
+        }
+      ]
+    },
+    {
+      "name": "1. Autenticacion (ms-auth, Node.js - reutilizado de P2)",
+      "item": [
+        {
+          "name": "Registrar usuario (maker)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"maker@usac.edu.gt\",\n  \"nombre\": \"Usuario Maker\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar usuario (checker)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"checker@usac.edu.gt\",\n  \"nombre\": \"Usuario Checker\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar usuario (authorizer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"authorizer@usac.edu.gt\",\n  \"nombre\": \"Usuario Authorizer\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login admin (guarda token_admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.token) { pm.collectionVariables.set('token_admin', d.token); }",
+                  "pm.test('Devuelve token', () => pm.expect(d.token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@usac.edu.gt\",\n  \"password\": \"Admin.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login maker (guarda token_maker)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.token) { pm.collectionVariables.set('token_maker', d.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"maker@usac.edu.gt\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login checker (guarda token_checker)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.token) { pm.collectionVariables.set('token_checker', d.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"checker@usac.edu.gt\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login authorizer (guarda token_authorizer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.token) { pm.collectionVariables.set('token_authorizer', d.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{gateway_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"authorizer@usac.edu.gt\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Sesion actual",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/auth/sesion"
+          }
+        },
+        {
+          "name": "Listar usuarios (solo admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/auth/usuarios"
+          }
+        },
+        {
+          "name": "Ruta protegida SIN token (debe dar 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Responde 401', () => pm.response.to.have.status(401));"]
+              }
+            }
+          ],
+          "request": { "method": "GET", "url": "{{gateway_url}}/api/lotes" }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Lotes (ms-lotes, Node.js - REST)",
+      "item": [
+        {
+          "name": "Crear lote valido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.id) { pm.collectionVariables.set('lote_id', d.id); }",
+                  "pm.test('Estado VALIDADO', () => pm.expect(d.estado).to.eql('VALIDADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/lotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreArchivo\": \"planilla-agosto.csv\",\n  \"transacciones\": [\n    { \"cuentaOrigen\": \"001-100\", \"cuentaDestino\": \"002-200\", \"monto\": 1500.50, \"beneficiarioNombre\": \"Ana Lopez\", \"beneficiarioEmail\": \"ana@usac.edu.gt\" },\n    { \"cuentaOrigen\": \"001-100\", \"cuentaDestino\": \"003-300\", \"monto\": 2200, \"beneficiarioNombre\": \"Luis Perez\", \"beneficiarioEmail\": \"luis@usac.edu.gt\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear lote invalido (monto excede limite, debe RECHAZARSE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.test('Estado RECHAZADO', () => pm.expect(d.estado).to.eql('RECHAZADO'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/lotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreArchivo\": \"malo.csv\",\n  \"transacciones\": [\n    { \"cuentaOrigen\": \"001\", \"cuentaDestino\": \"002\", \"monto\": 99999, \"beneficiarioNombre\": \"X\", \"beneficiarioEmail\": \"x@y.gt\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar lotes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/lotes"
+          }
+        },
+        {
+          "name": "Obtener un lote (con transacciones)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/lotes/{{lote_id}}"
+          }
+        },
+        {
+          "name": "Cambiar estado del lote a APROBADO",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/lotes/{{lote_id}}/estado",
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"APROBADO\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Lotes - GraphQL (ms-lotes, Node.js)",
+      "item": [
+        {
+          "name": "Query: lotes con transacciones anidadas",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/lotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ lotes { id nombreArchivo estado montoTotal transacciones { beneficiarioNombre monto valida motivoRechazo } } }\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Query: un lote por id",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/lotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query($id: Int!) { lote(id: $id) { id estado montoTotal totalTransacciones } }\",\n  \"variables\": { \"id\": {{lote_id}} }\n}"
+            }
+          }
+        },
+        {
+          "name": "Mutation: crear lote",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/lotes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($t: [TransaccionInput!]!) { crearLote(nombreArchivo: \\\"desde-graphql.csv\\\", usuarioId: \\\"1\\\", transacciones: $t) { id estado montoTotal } }\",\n  \"variables\": {\n    \"t\": [\n      { \"cuentaOrigen\": \"001-100\", \"cuentaDestino\": \"004-400\", \"monto\": 800, \"beneficiarioNombre\": \"Marta Diaz\", \"beneficiarioEmail\": \"marta@usac.edu.gt\" }\n    ]\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Aprobaciones (ms-aprobaciones, Python - REST)",
+      "item": [
+        {
+          "name": "Crear solicitud de aprobacion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.id) { pm.collectionVariables.set('solicitud_id', d.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/aprobaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lote_id\": {{lote_id}},\n  \"monto_total\": 3700.50\n}"
+            }
+          }
+        },
+        {
+          "name": "Paso 1 - Maker aprueba",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_maker}}" }
+            ],
+            "url": "{{gateway_url}}/api/aprobaciones/{{solicitud_id}}/pasos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APROBADO\",\n  \"comentario\": \"Revisado, se ve correcto\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Segregacion de funciones: el MISMO maker intenta paso 2 (debe dar 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Responde 409', () => pm.response.to.have.status(409));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_maker}}" }
+            ],
+            "url": "{{gateway_url}}/api/aprobaciones/{{solicitud_id}}/pasos",
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"APROBADO\"\n}" }
+          }
+        },
+        {
+          "name": "Paso 2 - Checker aprueba",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_checker}}" }
+            ],
+            "url": "{{gateway_url}}/api/aprobaciones/{{solicitud_id}}/pasos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APROBADO\",\n  \"comentario\": \"Montos y cuentas verificados\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Paso 3 - Authorizer aprueba (debe quedar APROBADA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.test('Solicitud APROBADA', () => pm.expect(d.estado).to.eql('APROBADA'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_authorizer}}" }
+            ],
+            "url": "{{gateway_url}}/api/aprobaciones/{{solicitud_id}}/pasos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"APROBADO\",\n  \"comentario\": \"Autorizado para envio al core bancario\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar solicitudes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/aprobaciones"
+          }
+        },
+        {
+          "name": "Obtener solicitud con sus pasos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/aprobaciones/{{solicitud_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Aprobaciones - GraphQL (ms-aprobaciones, Python/Strawberry)",
+      "item": [
+        {
+          "name": "Mutation: crear solicitud",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/aprobaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($loteId: Int!, $monto: Float!) { crearSolicitud(loteId: $loteId, montoTotal: $monto) { id estado pasoActual } }\",\n  \"variables\": { \"loteId\": {{lote_id}}, \"monto\": 3700.50 }\n}"
+            }
+          }
+        },
+        {
+          "name": "Query: solicitud con pasos anidados",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/aprobaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query($id: Int!) { solicitud(id: $id) { id estado pasoActual pasos { numeroPaso rolRequerido usuarioId decision } } }\",\n  \"variables\": { \"id\": {{solicitud_id}} }\n}"
+            }
+          }
+        },
+        {
+          "name": "Query: todas las solicitudes",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/graphql/aprobaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ solicitudes { id loteId estado pasoActual } }\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Notificaciones (ms-notificaciones, Python - REST, solo admin)",
+      "item": [
+        {
+          "name": "Crear notificacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "url": "{{gateway_url}}/api/notificaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lote_id\": {{lote_id}},\n  \"destinatario_email\": \"ana@usac.edu.gt\",\n  \"nombre\": \"Ana Lopez\",\n  \"monto\": 1500.50\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar notificaciones (admin -> 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Responde 200', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/notificaciones"
+          }
+        },
+        {
+          "name": "Listar notificaciones como cliente (debe dar 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": ["pm.test('Responde 403', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_maker}}" }],
+            "url": "{{gateway_url}}/api/notificaciones"
+          }
+        },
+        {
+          "name": "Notificaciones de un lote especifico",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": "{{gateway_url}}/api/notificaciones/lote/{{lote_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Acceso directo a servicios (sin pasar por el Gateway)",
+      "description": "Util para inspeccionar un microservicio de forma aislada durante la calificacion, sin la capa de autenticacion del Gateway.",
+      "item": [
+        {
+          "name": "ms-auth: registro directo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{auth_url}}/auth/registro",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"directo@usac.edu.gt\",\n  \"nombre\": \"Prueba Directa\",\n  \"password\": \"Clave.12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "ms-lotes: listar (sin token, sin Gateway)",
+          "request": { "method": "GET", "url": "{{lotes_url}}/lotes" }
+        },
+        {
+          "name": "ms-aprobaciones: OpenAPI JSON",
+          "request": { "method": "GET", "url": "{{aprobaciones_url}}/openapi.json" }
+        },
+        {
+          "name": "ms-notificaciones: OpenAPI JSON",
+          "request": { "method": "GET", "url": "{{notificaciones_url}}/openapi.json" }
+        }
+      ]
+    }
+  ]
+}

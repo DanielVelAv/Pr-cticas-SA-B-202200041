@@ -1,0 +1,136 @@
+services:
+  # ---------------------------------------------------------------
+  # Base de datos. Una instancia de PostgreSQL que aloja una base
+  # INDEPENDIENTE por microservicio (ver db/init/01-crear-bases.sql).
+  # Ningun servicio consulta la base de otro.
+  # ---------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: p4-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sa123}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-sa} -d ${POSTGRES_DB:-postgres}",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [p4net]
+
+  # ---------------------------------------------------------------
+  # Microservicio 1 — Autenticacion (Node.js)
+  # Reutilizado de la Practica 2: JWT RS256, AES-256-GCM e indice ciego.
+  # Genera el par de llaves RSA en el volumen compartido al arrancar.
+  # ---------------------------------------------------------------
+  ms-auth:
+    build: ./ms-auth
+    container_name: p4-ms-auth
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sa}:${POSTGRES_PASSWORD:-sa123}@postgres:5432/auth_db
+      AES_KEY: ${AES_KEY}
+      BLIND_INDEX_KEY: ${BLIND_INDEX_KEY}
+      BCRYPT_COST: ${BCRYPT_COST:-10}
+      JWT_TTL_SECONDS: ${JWT_TTL_SECONDS:-900}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
+      JWT_PRIVATE_KEY_PATH: /keys/jwt_private.pem
+      JWT_PUBLIC_KEY_PATH: /keys/jwt_public.pem
+    volumes:
+      - llaves:/keys
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [p4net]
+
+  # ---------------------------------------------------------------
+  # Microservicio 2 — Lotes de transacciones (Node.js)
+  # Expone REST y GraphQL.
+  # ---------------------------------------------------------------
+  ms-lotes:
+    build: ./ms-lotes
+    container_name: p4-ms-lotes
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sa}:${POSTGRES_PASSWORD:-sa123}@postgres:5432/lotes_db
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [p4net]
+
+  # ---------------------------------------------------------------
+  # Microservicio 3 — Aprobaciones (Python / FastAPI)
+  # Flujo maker-checker-authorizer. Expone REST y GraphQL.
+  # ---------------------------------------------------------------
+  ms-aprobaciones:
+    build: ./ms-aprobaciones
+    container_name: p4-ms-aprobaciones
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sa}:${POSTGRES_PASSWORD:-sa123}@postgres:5432/aprobaciones_db
+    ports:
+      - "3003:3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [p4net]
+
+  # ---------------------------------------------------------------
+  # Microservicio 4 — Notificaciones (Python / FastAPI)
+  # ---------------------------------------------------------------
+  ms-notificaciones:
+    build: ./ms-notificaciones
+    container_name: p4-ms-notificaciones
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sa}:${POSTGRES_PASSWORD:-sa123}@postgres:5432/notificaciones_db
+    ports:
+      - "3004:3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [p4net]
+
+  # ---------------------------------------------------------------
+  # API Gateway — unico punto de entrada al sistema.
+  # Monta el volumen de llaves en solo lectura: puede VERIFICAR
+  # tokens pero nunca firmarlos, porque no tiene la llave privada.
+  # ---------------------------------------------------------------
+  api-gateway:
+    build: ./api-gateway
+    container_name: p4-api-gateway
+    environment:
+      PORT: 8080
+      JWT_PUBLIC_KEY_PATH: /keys/jwt_public.pem
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
+      MS_AUTH_URL: http://ms-auth:3001
+      MS_LOTES_URL: http://ms-lotes:3002
+      MS_APROBACIONES_URL: http://ms-aprobaciones:3003
+      MS_NOTIFICACIONES_URL: http://ms-notificaciones:3004
+    volumes:
+      - llaves:/keys:ro
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      - ms-auth
+      - ms-lotes
+      - ms-aprobaciones
+      - ms-notificaciones
+    networks: [p4net]
+
+volumes:
+  pgdata:
+  llaves:
+
+networks:
+  p4net:
+    driver: bridge

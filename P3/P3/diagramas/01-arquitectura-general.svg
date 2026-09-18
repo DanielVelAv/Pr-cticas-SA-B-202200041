@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Arquitectura general del sistema de procesamiento de transacciones bancarias</title>
+  <desc id="desc">Portal web y API Gateway al frente; autenticacion OAuth corporativo mas el modulo de autorizacion de la Practica 2; tres microservicios de negocio con base de datos independiente; mensajeria asincrona RabbitMQ; sistemas externos core bancario, SMTP y almacenamiento S3; banda de logging centralizado.</desc>
+
+  <style>
+    .bg    { fill: #F6F5F2; }
+    .th    { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+             font-size: 13px; font-weight: 600; fill: #1B2430; }
+    .ts    { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+             font-size: 10.5px; fill: #5A6472; }
+    .tw    { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+             font-size: 13px; font-weight: 600; fill: #FFFFFF; }
+    .tws   { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+             font-size: 10.5px; fill: #D6DAE0; }
+    .tag   { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+             font-size: 9px; fill: #6B7280; letter-spacing: 0.04em; }
+    .cap   { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+             font-size: 11px; fill: #1B2430; }
+
+    .box       { stroke-width: 1.2; rx: 8; }
+    .b-gray    { fill: #F1F1EE; stroke: #B9B5AA; }
+    .b-purple  { fill: #EDE9F5; stroke: #6B5CA5; }
+    .b-amber   { fill: #FBF1E0; stroke: #C98A2C; }
+    .b-teal    { fill: #E7F5EF; stroke: #2F9E7A; }
+    .b-red     { fill: #FBEAE7; stroke: #C2513F; }
+    .b-db      { fill: #FFFFFF; stroke: #B9B5AA; }
+    .b-dark    { fill: #1B2430; stroke: #1B2430; }
+
+    .arr   { stroke: #5A6472; stroke-width: 1.4; fill: none; }
+    .evt   { stroke: #6B5CA5; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+    .band  { fill: #FBF1E0; stroke: #C98A2C; stroke-width: 1.2; stroke-dasharray: 6 4; rx: 8; }
+  </style>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#5A6472" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="e" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="#6B5CA5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1000" height="490"/>
+
+  <!-- ================= Portal ================= -->
+  <rect class="box b-gray" x="40" y="25" width="210" height="48"/>
+  <text class="th" x="145" y="44" text-anchor="middle">Portal Web Corporativo</text>
+  <text class="ts" x="145" y="60" text-anchor="middle">maker · checker · authorizer</text>
+
+  <!-- ================= Identidad (derecha) ================= -->
+  <rect class="box b-amber" x="780" y="20" width="200" height="44"/>
+  <text class="th" x="880" y="37" text-anchor="middle">OAuth Corporativo</text>
+  <text class="ts" x="880" y="53" text-anchor="middle">token 12 h — quién eres</text>
+
+  <rect class="box b-amber" x="780" y="76" width="200" height="48"/>
+  <text class="th" x="880" y="94" text-anchor="middle">Autorización (P2)</text>
+  <text class="ts" x="880" y="110" text-anchor="middle">permisos por rol — qué puedes</text>
+
+  <!-- ================= API Gateway ================= -->
+  <rect class="box b-purple" x="40" y="95" width="670" height="44"/>
+  <text class="th" x="375" y="112" text-anchor="middle">API Gateway</text>
+  <text class="ts" x="375" y="128" text-anchor="middle">ruteo · validación de firma del token · rate limiting · inyecta X-Correlation-Id</text>
+
+  <!-- ================= Microservicios ================= -->
+  <rect class="box b-teal" x="40" y="165" width="210" height="58"/>
+  <text class="th" x="145" y="184" text-anchor="middle">ms-lotes</text>
+  <text class="ts" x="145" y="200" text-anchor="middle">carga y validación CSV</text>
+  <text class="ts" x="145" y="214" text-anchor="middle">historial y descarga</text>
+
+  <rect class="box b-teal" x="270" y="165" width="210" height="58"/>
+  <text class="th" x="375" y="184" text-anchor="middle">ms-aprobaciones</text>
+  <text class="ts" x="375" y="200" text-anchor="middle">maker-checker-authorizer</text>
+  <text class="ts" x="375" y="214" text-anchor="middle">envío al core bancario</text>
+
+  <rect class="box b-teal" x="500" y="165" width="210" height="58"/>
+  <text class="th" x="605" y="184" text-anchor="middle">ms-notificaciones</text>
+  <text class="ts" x="605" y="200" text-anchor="middle">correos a beneficiarios</text>
+  <text class="ts" x="605" y="214" text-anchor="middle">plantillas y reintentos</text>
+
+  <!-- ================= Bases de datos ================= -->
+  <rect class="box b-db" x="85" y="235" width="120" height="30"/>
+  <text class="ts" x="145" y="253" text-anchor="middle">BD lotes</text>
+
+  <rect class="box b-db" x="315" y="235" width="120" height="30"/>
+  <text class="ts" x="375" y="253" text-anchor="middle">BD aprobaciones</text>
+
+  <rect class="box b-db" x="545" y="235" width="120" height="30"/>
+  <text class="ts" x="605" y="253" text-anchor="middle">BD notificaciones</text>
+
+  <!-- ================= Mensajería ================= -->
+  <rect class="box b-purple" x="100" y="295" width="610" height="42"/>
+  <text class="th" x="405" y="312" text-anchor="middle">RabbitMQ — mensajería asíncrona</text>
+  <text class="ts" x="405" y="328" text-anchor="middle">LoteValidado · LoteAprobado · TransaccionEnviada</text>
+
+  <!-- ================= Sistemas externos ================= -->
+  <rect class="box b-red" x="780" y="165" width="200" height="48"/>
+  <text class="th" x="880" y="183" text-anchor="middle">Core Bancario</text>
+  <text class="ts" x="880" y="199" text-anchor="middle">externo · compensación</text>
+
+  <rect class="box b-red" x="780" y="235" width="200" height="48"/>
+  <text class="th" x="880" y="253" text-anchor="middle">Servidor SMTP</text>
+  <text class="ts" x="880" y="269" text-anchor="middle">externo · correo saliente</text>
+
+  <rect class="box b-red" x="780" y="305" width="200" height="48"/>
+  <text class="th" x="880" y="323" text-anchor="middle">Almacenamiento S3</text>
+  <text class="ts" x="880" y="339" text-anchor="middle">CSV originales · versionado</text>
+
+  <!-- ================= Banda de logging ================= -->
+  <rect class="band" x="40" y="380" width="940" height="44"/>
+  <text class="th" x="510" y="398" text-anchor="middle">Logging centralizado y auditable (ELK)</text>
+  <text class="ts" x="510" y="414" text-anchor="middle">todos los componentes emiten logs estructurados correlacionados por X-Correlation-Id</text>
+
+  <!-- ================= Conexiones síncronas (REST) ================= -->
+  <!-- Portal -> Gateway -->
+  <path class="arr" d="M145 75 L145 93" marker-end="url(#a)"/>
+  <!-- Gateway -> OAuth -->
+  <path class="arr" d="M712 100 L750 100 L750 42 L776 42" marker-end="url(#a)"/>
+  <!-- Gateway -> Autorizacion P2 -->
+  <path class="arr" d="M712 112 L776 112" marker-end="url(#a)"/>
+  <!-- Gateway -> ms-lotes -->
+  <path class="arr" d="M145 141 L145 163" marker-end="url(#a)"/>
+  <!-- Gateway -> ms-aprobaciones -->
+  <path class="arr" d="M375 141 L375 163" marker-end="url(#a)"/>
+  <!-- ms-aprobaciones -> Core Bancario -->
+  <path class="arr" d="M400 163 L400 152 L755 152 L755 189 L776 189" marker-end="url(#a)"/>
+  <!-- ms-notificaciones -> SMTP -->
+  <path class="arr" d="M712 205 L735 205 L735 259 L776 259" marker-end="url(#a)"/>
+  <!-- ms-lotes -> S3 -->
+  <path class="arr" d="M60 225 L60 360 L760 360 L760 329 L776 329" marker-end="url(#a)"/>
+  <!-- Servicios -> sus bases de datos -->
+  <path class="arr" d="M145 225 L145 233" marker-end="url(#a)"/>
+  <path class="arr" d="M375 225 L375 233" marker-end="url(#a)"/>
+  <path class="arr" d="M605 225 L605 233" marker-end="url(#a)"/>
+
+  <!-- ================= Conexiones asíncronas (eventos) ================= -->
+  <!-- ms-lotes publica -->
+  <path class="evt" d="M230 225 L230 293" marker-end="url(#e)"/>
+  <!-- ms-aprobaciones publica -->
+  <path class="evt" d="M460 225 L460 293" marker-end="url(#e)"/>
+  <!-- RabbitMQ entrega a ms-notificaciones -->
+  <path class="evt" d="M690 293 L690 225" marker-end="url(#e)"/>
+
+  <!-- Etiquetas de arista -->
+  <text class="tag" x="238" y="272">publica</text>
+  <text class="tag" x="468" y="272">publica</text>
+  <text class="tag" x="640" y="284" text-anchor="end">consume</text>
+  <text class="tag" x="600" y="148">REST + idempotencia</text>
+
+  <!-- ================= Leyenda ================= -->
+  <line class="arr" x1="40" y1="452" x2="76" y2="452" marker-end="url(#a)"/>
+  <text class="cap" x="84" y="456">Llamada síncrona (REST)</text>
+
+  <line class="evt" x1="248" y1="452" x2="284" y2="452" marker-end="url(#e)"/>
+  <text class="cap" x="292" y="456">Evento asíncrono (mensajería)</text>
+
+  <rect class="b-red" x="512" y="444" width="16" height="16" rx="3" stroke-width="1.2"/>
+  <text class="cap" x="536" y="456">Sistema externo</text>
+
+  <rect class="b-teal" x="648" y="444" width="16" height="16" rx="3" stroke-width="1.2"/>
+  <text class="cap" x="672" y="456">Microservicio propio (BD independiente)</text>
+</svg>

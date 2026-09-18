@@ -1,0 +1,43 @@
+sequenceDiagram
+    autonumber
+    participant MQ as RabbitMQ
+    participant N as ms-notificaciones
+    participant DB as BD notificaciones
+    participant L as ms-lotes
+    participant SMTP as Servidor SMTP
+    actor B as Beneficiario
+
+    MQ->>N: entrega LoteAprobado (eventoId, loteId)
+
+    rect rgb(251, 241, 224)
+    Note over N,DB: Deduplicacion (patron Inbox)
+    N->>DB: SELECT EventoProcesado WHERE evento_id = ?
+    alt el evento ya fue procesado
+        DB-->>N: existe
+        N-->>MQ: ACK sin reprocesar
+    else primera vez que llega
+        DB-->>N: no existe
+        N->>DB: INSERT EventoProcesado (eventoId)
+    end
+    end
+
+    N->>L: GET /lotes/{loteId}/beneficiarios
+    L-->>N: lista (nombre, correo, monto, referencia)
+    N->>DB: SELECT Plantilla activa
+
+    loop por cada beneficiario del lote
+        N->>DB: INSERT Notificacion (estado = PENDIENTE)
+        N->>N: renderiza plantilla con datos del beneficiario
+        N->>SMTP: enviar correo
+        alt entregado al servidor
+            SMTP-->>N: messageId
+            N->>DB: UPDATE estado = ENVIADA, proveedor_message_id
+            SMTP->>B: correo "su transaccion esta en proceso"
+        else fallo de entrega
+            SMTP--xN: error
+            N->>DB: UPDATE intentos + 1, estado = FALLIDA
+            Note over N,DB: se reintenta despues.<br/>tras N intentos pasa a DESCARTADA
+        end
+    end
+
+    N-->>MQ: ACK del evento

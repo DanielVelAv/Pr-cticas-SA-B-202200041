@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    participant A as ms-aprobaciones
+    participant DB as BD aprobaciones
+    participant C as Core Bancario
+    participant PUB as Publicador Outbox
+    participant MQ as RabbitMQ
+
+    Note over A,DB: la solicitud quedo en estado APROBADA
+    A->>DB: INSERT EnvioCore (idempotency_key, estado = PENDIENTE)
+
+    loop hasta CORE_MAX_INTENTOS, backoff exponencial con jitter
+        A->>C: POST /transferencias (Idempotency-Key, lote)
+        alt respuesta 2xx
+            C-->>A: aceptado (referencia del core)
+        else timeout, error de red o 5xx
+            C--xA: falla transitoria
+            A->>DB: UPDATE EnvioCore intentos + 1
+            A->>A: espera min(base x 2^n, techo) x jitter
+        else respuesta 4xx (lote mal formado)
+            C-->>A: rechazado definitivo
+            Note over A: no se reintenta.<br/>reintentar daria el mismo error
+        end
+    end
+
+    alt envio aceptado por el core
+        rect rgb(231, 245, 239)
+        Note over A,DB: una sola transaccion de base de datos
+        A->>DB: UPDATE EnvioCore estado = ACEPTADO
+        A->>DB: UPDATE SolicitudAprobacion estado = ENVIADA
+        A->>DB: INSERT EVENTO_OUTBOX (LoteAprobado)
+        end
+    else intentos agotados
+        A->>DB: UPDATE EnvioCore estado = FALLIDO
+        Note over A: alerta a operaciones.<br/>NO se reintenta automaticamente,<br/>requiere decision humana
+    end
+
+    PUB->>DB: SELECT eventos con publicado = false
+    PUB->>MQ: publica LoteAprobado
+    PUB->>DB: UPDATE publicado = true

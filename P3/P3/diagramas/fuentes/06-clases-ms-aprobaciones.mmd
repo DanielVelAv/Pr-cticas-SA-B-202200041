@@ -1,0 +1,82 @@
+classDiagram
+    direction LR
+
+    class SolicitudAprobacion {
+        +UUID id
+        +UUID loteId
+        +BigDecimal montoTotal
+        +EstadoSolicitud estado
+        +int pasoActual
+        +registrarDecision(PasoAprobacion) void
+        +estaCompleta() boolean
+    }
+
+    class PasoAprobacion {
+        +UUID id
+        +int numeroPaso
+        +RolAprobacion rolRequerido
+        +String usuarioId
+        +Decision decision
+        +String comentario
+    }
+
+    class PoliticaAprobacion {
+        +UUID id
+        +BigDecimal montoMinimo
+        +BigDecimal montoMaximo
+        +rolParaPaso(int) RolAprobacion
+        +aplicaA(BigDecimal) boolean
+    }
+
+    class EnvioCore {
+        +UUID id
+        +UUID idempotencyKey
+        +EstadoEnvio estado
+        +int intentos
+    }
+
+    class FlujoAprobacion {
+        +avanzar(SolicitudAprobacion, String, Decision) void
+        -validarSegregacionFunciones(SolicitudAprobacion, String) void
+    }
+
+    class ClienteCoreBancario {
+        <<interface>>
+        +enviarLote(SolicitudAprobacion, UUID) RespuestaCore
+    }
+    class ClienteCoreBancarioRest {
+        -PoliticaReintentos reintentos
+        +enviarLote(SolicitudAprobacion, UUID) RespuestaCore
+    }
+
+    class PoliticaReintentos {
+        +maxIntentos int
+        +backoffBaseMs int
+        +ejecutar(Operacion) Resultado
+    }
+
+    class RolAprobacion {
+        <<enumeration>>
+        MAKER
+        CHECKER
+        AUTHORIZER
+    }
+
+    class EstadoSolicitud {
+        <<enumeration>>
+        EN_CURSO
+        APROBADA
+        RECHAZADA
+        ENVIADA
+    }
+
+    SolicitudAprobacion "1" *-- "3" PasoAprobacion
+    SolicitudAprobacion "1" --> "0..1" EnvioCore
+    PoliticaAprobacion "1" --> "0..*" SolicitudAprobacion
+    PasoAprobacion --> RolAprobacion
+    SolicitudAprobacion --> EstadoSolicitud
+    FlujoAprobacion ..> SolicitudAprobacion
+    FlujoAprobacion ..> PoliticaAprobacion
+    ClienteCoreBancario <|.. ClienteCoreBancarioRest
+    ClienteCoreBancarioRest o-- PoliticaReintentos
+    FlujoAprobacion ..> ClienteCoreBancario

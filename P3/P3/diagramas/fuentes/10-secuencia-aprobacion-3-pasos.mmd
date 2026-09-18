@@ -1,0 +1,62 @@
+sequenceDiagram
+    autonumber
+    participant MQ as RabbitMQ
+    participant A as ms-aprobaciones
+    participant DB as BD aprobaciones
+    participant GW as API Gateway
+    participant AZ as Autorizacion (P2)
+    actor MK as Maker
+    actor CH as Checker
+    actor AU as Authorizer
+
+    MQ->>A: entrega LoteValidado (loteId, montoTotal)
+    A->>DB: SELECT PoliticaAprobacion segun monto
+    DB-->>A: politica (roles por paso)
+    A->>DB: INSERT SolicitudAprobacion (paso_actual = 1)
+
+    rect rgb(237, 233, 245)
+    Note over MK,DB: Paso 1 — Maker
+    MK->>GW: POST /aprobaciones/{id}/pasos {APROBADO}
+    GW->>AZ: evaluarPermiso(sub, "aprobaciones:paso1")
+    AZ-->>GW: permitido
+    GW->>A: registrar decision
+    A->>A: validarSegregacionFunciones(usuarioId)
+    A->>DB: INSERT PasoAprobacion (1, MAKER, APROBADO)
+    A->>DB: UPDATE paso_actual = 2
+    A-->>MK: 200 paso 1 registrado
+    end
+
+    rect rgb(237, 233, 245)
+    Note over CH,DB: Paso 2 — Checker
+    CH->>GW: POST /aprobaciones/{id}/pasos {APROBADO}
+    GW->>AZ: evaluarPermiso(sub, "aprobaciones:paso2")
+    AZ-->>GW: permitido
+    GW->>A: registrar decision
+    A->>A: validarSegregacionFunciones(usuarioId)
+    alt el usuario ya participo en un paso anterior
+        A-->>CH: 409 Conflict — segregacion de funciones
+    else usuario distinto
+        A->>DB: INSERT PasoAprobacion (2, CHECKER, APROBADO)
+        A->>DB: UPDATE paso_actual = 3
+        A-->>CH: 200 paso 2 registrado
+    end
+    end
+
+    rect rgb(237, 233, 245)
+    Note over AU,DB: Paso 3 — Authorizer
+    AU->>GW: POST /aprobaciones/{id}/pasos {APROBADO}
+    GW->>AZ: evaluarPermiso(sub, "aprobaciones:paso3")
+    AZ-->>GW: permitido
+    GW->>A: registrar decision
+    A->>A: validarSegregacionFunciones(usuarioId)
+    A->>DB: INSERT PasoAprobacion (3, AUTHORIZER, APROBADO)
+    end
+
+    alt los tres pasos aprobados
+        A->>DB: UPDATE SolicitudAprobacion estado = APROBADA
+        Note over A,DB: continua en el flujo 3 (envio al core)
+    else cualquier paso rechazado
+        A->>DB: UPDATE estado = RECHAZADA, fecha_cierre
+        A->>DB: INSERT EVENTO_OUTBOX (LoteRechazado)
+        Note over A: el lote no se envia al core bancario
+    end

@@ -1,0 +1,8 @@
+Carpeta reservada para los entregables de documentacion pendientes:
+
+  diagramas/  -> arquitectura, despliegue y ER
+  contratos/  -> Swagger / coleccion de Postman
+
+FastAPI ya genera OpenAPI automaticamente en:
+  http://localhost:3003/docs   (ms-aprobaciones)
+  http://localhost:3004/docs   (ms-notificaciones)

@@ -1,0 +1,17 @@
+{
+  "name": "ms-lotes",
+  "version": "1.0.0",
+  "description": "Microservicio de lotes de transacciones (REST + GraphQL)",
+  "main": "src/server.js",
+  "scripts": { "start": "node src/server.js", "test": "jest --ci" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "graphql": "^16.9.0",
+    "graphql-http": "^1.22.1",
+    "pg": "^8.11.5",
+    "ruru": "^2.0.0-beta.11"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
