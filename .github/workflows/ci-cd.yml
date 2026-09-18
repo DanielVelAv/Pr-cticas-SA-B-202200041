@@ -261,7 +261,14 @@ jobs:
       - name: Verificar que todos los pods esten en Running
         run: |
           kubectl get pods -n sa-p7
-          kubectl wait --for=condition=Ready pods --all -n sa-p7 --timeout=180s
+          # Se excluyen los pods de CronJob: un Job completado queda en
+          # estado "Completed" y NUNCA alcanza condition=Ready (es lo
+          # correcto, ya termino su trabajo). Esperarlo con --all agota
+          # el timeout aunque todo el despliegue este sano.
+          kubectl wait --for=condition=Ready pods \
+            -l app.kubernetes.io/part-of=sa-platform \
+            --field-selector=status.phase!=Succeeded \
+            -n sa-p7 --timeout=180s
 
       - name: Verificar el health del api-gateway (evidencia de funcionamiento)
         run: |
