@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisRun
+metadata:
+  annotations:
+    rollout.argoproj.io/revision: "3"
+  creationTimestamp: "2026-09-21T07:05:23Z"
+  generation: 4
+  labels:
+    app.kubernetes.io/instance: sa-platform
+    app.kubernetes.io/name: api-gateway
+    rollout-type: Step
+    rollouts-pod-template-hash: 74bb9b969b
+    step-index: "2"
+  name: sa-platform-api-gateway-74bb9b969b-3-2
+  namespace: sa-p8-produccion
+  ownerReferences:
+  - apiVersion: argoproj.io/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Rollout
+    name: sa-platform-api-gateway
+    uid: 120a82fa-eb0f-45d5-a82d-6de968c0ef5a
+  resourceVersion: "106804"
+  uid: 47af7d72-e2d5-4c3c-946a-567ec7445aa1
+spec:
+  metrics:
+  - count: 5
+    failureLimit: 2
+    interval: 10s
+    name: health-check-200
+    provider:
+      web:
+        authentication:
+          oauth2: {}
+          sigv4: {}
+        jsonPath: '{$.estado}'
+        timeoutSeconds: 5
+        url: http://sa-platform-api-gateway-canary.sa-p8-produccion.svc.cluster.local:8080/health
+    successCondition: result == "ok"
+status:
+  completedAt: "2026-09-21T07:05:43Z"
+  dryRunSummary: {}
+  message: Metric "health-check-200" assessed Failed due to failed (3) > failureLimit
+    (2)
+  metricResults:
+  - count: 3
+    failed: 3
+    measurements:
+    - finishedAt: "2026-09-21T07:05:23Z"
+      phase: Failed
+      startedAt: "2026-09-21T07:05:23Z"
+      value: '"degradado"'
+    - finishedAt: "2026-09-21T07:05:33Z"
+      phase: Failed
+      startedAt: "2026-09-21T07:05:33Z"
+      value: '"degradado"'
+    - finishedAt: "2026-09-21T07:05:43Z"
+      phase: Failed
+      startedAt: "2026-09-21T07:05:43Z"
+      value: '"degradado"'
+    name: health-check-200
+    phase: Failed
+  phase: Failed
+  runSummary:
+    count: 1
+    failed: 1
+  startedAt: "2026-09-21T07:05:23Z"

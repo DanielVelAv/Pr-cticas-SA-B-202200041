@@ -1,0 +1,146 @@
+Name:         sa-platform-api-gateway
+Namespace:    sa-p8-produccion
+Labels:       app.kubernetes.io/instance=sa-platform
+              app.kubernetes.io/managed-by=Helm
+              app.kubernetes.io/name=api-gateway
+              app.kubernetes.io/part-of=sa-platform
+              app.kubernetes.io/version=1.0.0
+              helm.sh/chart=api-gateway-1.0.0
+Annotations:  argocd.argoproj.io/tracking-id: sa-platform:argoproj.io/Rollout:sa-p8-produccion/sa-platform-api-gateway
+              rollout.argoproj.io/revision: 2
+API Version:  argoproj.io/v1alpha1
+Kind:         Rollout
+Metadata:
+  Creation Timestamp:  2026-09-19T17:29:13Z
+  Generation:          2
+  Resource Version:    79044
+  UID:                 120a82fa-eb0f-45d5-a82d-6de968c0ef5a
+Spec:
+  Replicas:  1
+  Selector:
+    Match Labels:
+      app.kubernetes.io/instance:  sa-platform
+      app.kubernetes.io/name:      api-gateway
+  Strategy:
+    Canary:
+      Steps:
+        Set Weight:  20
+        Pause:
+          Duration:  20s
+        Analysis:
+          Templates:
+            Template Name:  api-gateway-health-check
+        Set Weight:         50
+        Pause:
+          Duration:  20s
+        Set Weight:  100
+  Template:
+    Metadata:
+      Annotations:
+        checksum/config:  9c49f23827e241ed078a6d14652a3a2b89d069b2808b5e5e1456acb1fcef10fa
+      Labels:
+        app.kubernetes.io/instance:  sa-platform
+        app.kubernetes.io/name:      api-gateway
+    Spec:
+      Containers:
+        Env:
+          Name:   PORT
+          Value:  8080
+          Name:   SIMULAR_FALLO
+          Value:  false
+        Env From:
+          Config Map Ref:
+            Name:           sa-platform-config
+        Image:              sa-p7/api-gateway:v1-estable
+        Image Pull Policy:  Never
+        Name:               api-gateway
+        Ports:
+          Container Port:  8080
+          Name:            http
+          Protocol:        TCP
+        Resources:
+          Limits:
+            Cpu:     500m
+            Memory:  256Mi
+          Requests:
+            Cpu:     100m
+            Memory:  128Mi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Read Only Root Filesystem:  true
+          Run As Group:               1000
+          Run As Non Root:            true
+          Run As User:                1000
+        Volume Mounts:
+          Mount Path:  /tmp
+          Name:        tmp
+          Mount Path:  /keys
+          Name:        llave-publica-jwt
+          Read Only:   true
+      Security Context:
+        Fs Group:            1000
+        Run As Non Root:     true
+      Service Account Name:  sa-platform-api-gateway
+      Volumes:
+        Empty Dir:
+        Name:  tmp
+        Name:  llave-publica-jwt
+        Secret:
+          Items:
+            Key:        jwt-public-key
+            Path:       jwt_public.pem
+          Secret Name:  sa-platform-secrets
+Status:
+  HPAReplicas:         1
+  Available Replicas:  1
+  Blue Green:
+  Canary:
+  Conditions:
+    Last Transition Time:  2026-09-19T17:29:19Z
+    Last Update Time:      2026-09-19T17:29:19Z
+    Message:               Rollout has minimum availability
+    Reason:                AvailableReason
+    Status:                True
+    Type:                  Available
+    Last Transition Time:  2026-09-19T17:38:48Z
+    Last Update Time:      2026-09-19T17:38:48Z
+    Message:               Rollout is paused
+    Reason:                RolloutPaused
+    Status:                False
+    Type:                  Paused
+    Last Transition Time:  2026-09-19T17:38:48Z
+    Last Update Time:      2026-09-19T17:38:48Z
+    Message:               Rollout is healthy
+    Reason:                RolloutHealthy
+    Status:                True
+    Type:                  Healthy
+    Last Transition Time:  2026-09-19T17:38:48Z
+    Last Update Time:      2026-09-19T17:38:48Z
+    Message:               ReplicaSet "sa-platform-api-gateway-77c4f586cd" has successfully progressed.
+    Reason:                NewReplicaSetAvailable
+    Status:                True
+    Type:                  Progressing
+    Last Transition Time:  2026-09-19T17:38:48Z
+    Last Update Time:      2026-09-19T17:38:48Z
+    Message:               RolloutCompleted
+    Reason:                RolloutCompleted
+    Status:                True
+    Type:                  Completed
+  Current Pod Hash:        77c4f586cd
+  Current Step Hash:       7687db64fd
+  Current Step Index:      6
+  Observed Generation:     2
+  Phase:                   Healthy
+  Ready Replicas:          1
+  Replicas:                1
+  Selector:                app.kubernetes.io/instance=sa-platform,app.kubernetes.io/name=api-gateway
+  Stable RS:               77c4f586cd
+  Updated Replicas:        1
+Events:
+  Type    Reason                  Age   From                 Message
+  ----    ------                  ----  ----                 -------
+  Normal  RolloutAddedToInformer  29m   rollouts-controller  Rollout resource added to informer: sa-p8-produccion/sa-platform-api-gateway
+  Normal  RolloutAddedToInformer  4m8s  rollouts-controller  Rollout resource added to informer: sa-p8-produccion/sa-platform-api-gateway

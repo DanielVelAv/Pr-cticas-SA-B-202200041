@@ -1,0 +1,79 @@
+apiVersion: v1
+items:
+- apiVersion: argoproj.io/v1alpha1
+  kind: AnalysisRun
+  metadata:
+    annotations:
+      rollout.argoproj.io/revision: "2"
+    creationTimestamp: "2026-09-19T17:37:48Z"
+    generation: 6
+    labels:
+      app.kubernetes.io/instance: sa-platform
+      app.kubernetes.io/name: api-gateway
+      rollout-type: Step
+      rollouts-pod-template-hash: 77c4f586cd
+      step-index: "2"
+    name: sa-platform-api-gateway-77c4f586cd-2-2
+    namespace: sa-p8-produccion
+    ownerReferences:
+    - apiVersion: argoproj.io/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Rollout
+      name: sa-platform-api-gateway
+      uid: 120a82fa-eb0f-45d5-a82d-6de968c0ef5a
+    resourceVersion: "78964"
+    uid: 70360499-07e5-496a-ab90-9568b2be62da
+  spec:
+    metrics:
+    - count: 5
+      failureLimit: 2
+      interval: 10s
+      name: health-check-200
+      provider:
+        web:
+          authentication:
+            oauth2: {}
+            sigv4: {}
+          jsonPath: '{$.estado}'
+          timeoutSeconds: 5
+          url: http://sa-platform-api-gateway.sa-p8-produccion.svc.cluster.local:8080/health
+      successCondition: result == "ok"
+  status:
+    completedAt: "2026-09-19T17:38:28Z"
+    dryRunSummary: {}
+    metricResults:
+    - consecutiveSuccess: 5
+      count: 5
+      measurements:
+      - finishedAt: "2026-09-19T17:37:48Z"
+        phase: Successful
+        startedAt: "2026-09-19T17:37:48Z"
+        value: '"ok"'
+      - finishedAt: "2026-09-19T17:37:58Z"
+        phase: Successful
+        startedAt: "2026-09-19T17:37:58Z"
+        value: '"ok"'
+      - finishedAt: "2026-09-19T17:38:08Z"
+        phase: Successful
+        startedAt: "2026-09-19T17:38:08Z"
+        value: '"ok"'
+      - finishedAt: "2026-09-19T17:38:18Z"
+        phase: Successful
+        startedAt: "2026-09-19T17:38:18Z"
+        value: '"ok"'
+      - finishedAt: "2026-09-19T17:38:28Z"
+        phase: Successful
+        startedAt: "2026-09-19T17:38:28Z"
+        value: '"ok"'
+      name: health-check-200
+      phase: Successful
+      successful: 5
+    phase: Successful
+    runSummary:
+      count: 1
+      successful: 1
+    startedAt: "2026-09-19T17:37:48Z"
+kind: List
+metadata:
+  resourceVersion: ""

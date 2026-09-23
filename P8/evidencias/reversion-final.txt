@@ -1,0 +1,27 @@
+Name:            sa-platform-api-gateway
+Namespace:       sa-p8-produccion
+Status:          [31m✖[0m Degraded
+Message:         RolloutAborted: Rollout aborted update to revision 3: Step-based analysis phase error/failed: Metric "health-check-200" assessed Failed due to failed (3) > failureLimit (2)
+Strategy:        Canary
+  Step:          0/6
+  SetWeight:     0
+  ActualWeight:  0
+Images:          sa-p7/api-gateway:v1-estable ([32mstable[0m)
+Replicas:
+  Desired:       1
+  Current:       1
+  Updated:       0
+  Ready:         1
+  Available:     1
+
+NAME                                                 KIND         STATUS        AGE  INFO
+⟳ sa-platform-api-gateway                            Rollout      [31m✖[0m Degraded    37h  
+├──# revision:3                                                                      
+│  ├──⧉ [33msa-platform-api-gateway-74bb9b969b[0m           ReplicaSet   [0m•[0m ScaledDown  51s  [33mcanary[0m
+│  └──α [0msa-platform-api-gateway-74bb9b969b-3-2[0m       AnalysisRun  [31m✖[0m Failed      55s  [31m✖[0m 3
+├──# revision:2                                                                      
+│  ├──⧉ [32msa-platform-api-gateway-77c4f586cd[0m           ReplicaSet   [32m✔[0m Healthy     37h  [32mstable[0m
+│  │  └──□ sa-platform-api-gateway-77c4f586cd-wf586  Pod          [32m✔[0m Running     37h  ready:1/1,restarts:3
+│  └──α [0msa-platform-api-gateway-77c4f586cd-2-2[0m       AnalysisRun  [32m✔[0m Successful  37h  [32m✔[0m 5
+└──# revision:1                                                                      
+   └──⧉ sa-platform-api-gateway-54c79bf884           ReplicaSet   [0m•[0m ScaledDown  37h  

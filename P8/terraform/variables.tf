@@ -38,22 +38,22 @@ variable "ambientes" {
 # ---------------------------------------------------------------------
 variable "cuota_requests_cpu" {
   type    = string
-  default = "1500m"
+  default = "3000m"
 }
 
 variable "cuota_requests_memory" {
   type    = string
-  default = "2Gi"
+  default = "4Gi"
 }
 
 variable "cuota_limits_cpu" {
   type    = string
-  default = "3"
+  default = "7"
 }
 
 variable "cuota_limits_memory" {
   type    = string
-  default = "3Gi"
+  default = "7Gi"
 }
 
 variable "cuota_pods" {
