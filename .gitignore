@@ -33,3 +33,13 @@ Thumbs.db
 
 # Logs
 *.log
+# Terraform — estado y binarios nunca en el repo (P9: estado remoto en HCP)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl.bak
+*.tfvars
+terraform_*_linux_amd64.zip
+
+# Evidencias de P9 sí se versionan
+!P9/evidencias/*.log
