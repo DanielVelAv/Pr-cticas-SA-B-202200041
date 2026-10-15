@@ -1,0 +1,19 @@
+# Prueba de bloqueo del estado remoto (HCP Terraform, org Sa9, workspace sa-p9)
+# Operador A: terraform plan (toma el bloqueo). Operador B: terraform plan simultaneo con -lock-timeout=0s
+2026-10-15T07:42:45Z A inicia
+2026-10-15T07:42:49Z B inicia mientras A corre
+Error: Error acquiring the state lock
+Error message: workspace already locked (lock ID: "Sa9/sa-p9")
+Lock Info:
+  ID:        42195870-cad6-0490-3d17-6728cd4618b7
+  Path:      
+  Operation: OperationTypePlan
+  Who:       dolyad@dolyad-HP-Pavilion-Laptop-15-cw0xxx
+  Version:   1.9.8
+  Created:   2026-10-15 07:42:50.377849958 +0000 UTC
+  Info:      
+Terraform acquires a state lock to protect the state from being written
+by multiple users at the same time. Please resolve the issue above and try
+again. For most commands, you can disable locking with the "-lock=false"
+flag, but this is not recommended.
+2026-10-15T07:43:08Z A termina: No changes. Your infrastructure matches the configuration.
