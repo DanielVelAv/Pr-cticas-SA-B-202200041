@@ -71,7 +71,7 @@ log "llaves de Sealed Secrets en el cluster: $($K -n kube-system get secret -l s
 log "SealedSecret: $($K -n "$NS" get sealedsecret sa-platform-secrets -o jsonpath='{.status.conditions[0].type}={.status.conditions[0].status}')"
 log "Rollout api-gateway: $($K -n "$NS" get rollout sa-platform-api-gateway -o jsonpath='{.status.phase}') ($($K -n "$NS" get rollout sa-platform-api-gateway -o jsonpath='{.status.availableReplicas}') disponibles)"
 log "Kyverno con nginx:latest: $($K -n "$NS" run prueba-latest --image=nginx:latest --restart=Never 2>&1 | grep -oE 'blocked due to the following policies|created' | head -1)"
-log "Schedule: $(velero --kubecontext $CTX schedule get --no-headers 2>/dev/null | awk '{print $1, $2, $4, $5, $6}')"
+log "Schedule: $(kubectl --context $CTX -n velero get schedules.velero.io sa-p9-horario -o jsonpath='{.metadata.name} {.status.phase} {.spec.schedule} ttl={.spec.template.ttl}')"
 log "pods: $($K -n "$NS" get pods -o wide --no-headers | awk '{printf "%s(%s,%s) ", $1, $3, $7}')"
 
 RTO=$(( $(seg "$T_SERVICIO") - $(seg "$T_DESASTRE") ))

@@ -1,0 +1,71 @@
+
+2026-10-16T08:07:04Z ===== T_inicio bootstrap (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/bootstrap-20261016T080704Z.log) =====
+
+2026-10-16T08:07:04Z ===== 1/6 prerrequisitos =====
+ok
+
+2026-10-16T08:07:05Z ===== 2/6 terraform init (backend remoto HCP Terraform) =====
+ok
+
+2026-10-16T08:07:09Z ===== 3/6 terraform apply fase 1: cluster kind =====
+2026-10-16T08:07:10Z DESASTRE DETECTADO: el estado remoto tiene kind_cluster.sa_p9 pero el cluster no existe -> state rm
+Removed kind_cluster.sa_p9
+Successfully removed 1 resource instance(s).
+kind_cluster.sa_p9: Creating...
+kind_cluster.sa_p9: Creation complete after 49s [id=sa-p9-kindest/node:v1.31.0]
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+  nodo sa-p9-control-plane Ready
+  nodo sa-p9-worker NotReady
+  nodo sa-p9-worker2 NotReady
+
+2026-10-16T08:08:05Z ===== 4/6 terraform apply fase 2: plataforma (ns, llave, Velero, restore, ArgoCD, app raiz) =====
+null_resource.restaurar_datos[0]: Destruction complete after 0s
+kubernetes_storage_class_v1.local_velero: Creation complete after 1s [id=local-velero]
+kubernetes_namespace_v1.ambiente["sa-p9-produccion"]: Creation complete after 1s [id=sa-p9-produccion]
+kubernetes_namespace_v1.ambiente["sa-p9-staging"]: Creation complete after 1s [id=sa-p9-staging]
+kubernetes_namespace_v1.velero: Creation complete after 1s [id=velero]
+kubernetes_secret_v1.sealed_secrets_key: Creation complete after 0s [id=kube-system/sealed-secrets-key-sa-p9]
+kubernetes_annotations.standard_no_default: Modifications complete after 1s [id=apiVersion=storage.k8s.io/v1,kind=StorageClass,name=standard]
+kubernetes_service_account_v1.auditor["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-auditor]
+kubernetes_service_account_v1.auditor["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-auditor]
+kubernetes_limit_range_v1.limites["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-limites]
+kubernetes_secret_v1.velero_r2: Creation complete after 0s [id=velero/velero-r2]
+kubernetes_limit_range_v1.limites["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-limites]
+kubernetes_resource_quota_v1.cuota["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-cuota]
+kubernetes_role_v1.solo_lectura["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-solo-lectura]
+kubernetes_role_v1.solo_lectura["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-solo-lectura]
+kubernetes_resource_quota_v1.cuota["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-cuota]
+kubernetes_role_binding_v1.solo_lectura["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-solo-lectura]
+kubernetes_role_binding_v1.solo_lectura["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-solo-lectura]
+helm_release.velero: Creation complete after 1m16s [id=velero]
+null_resource.restaurar_datos[0] (local-exec): Executing: ["/bin/sh" "-c" "./../scripts/restaurar-datos.sh"]
+null_resource.restaurar_datos[0] (local-exec): 2026-10-16T08:09:57Z [restaurar-datos] inicio (ns=sa-p9-produccion schedule=sa-p9-horario)
+helm_release.argocd: Creation complete after 2m1s [id=argocd]
+null_resource.restaurar_datos[0] (local-exec): 2026-10-16T08:10:38Z [restaurar-datos] BSL Available, ultima sincronizacion 2026-10-16T08:10:37Z
+null_resource.restaurar_datos[0] (local-exec): 2026-10-16T08:10:38Z [restaurar-datos] respaldo elegido: sa-p9-horario-20261016080010 (completado 2026-10-16T08:01:56Z)
+null_resource.restaurar_datos[0] (local-exec): 2026-10-16T08:10:38Z [restaurar-datos] T_restore_inicio 2026-10-16T08:10:38Z -> dr-20261016081038
+null_resource.restaurar_datos[0] (local-exec): 2026-10-16T08:10:43Z [restaurar-datos] StatefulSet y PVC de PostgreSQL restaurados (el volumen se completa cuando exista el Secret)
+null_resource.restaurar_datos[0]: Creation complete after 47s [id=4279681628323736442]
+helm_release.root_app: Creation complete after 7s [id=sa-p9-root]
+Apply complete! Resources: 20 added, 1 changed, 1 destroyed.
+certificado publico de Sealed Secrets -> P9/sealed-secrets-pub.pem
+
+2026-10-16T08:11:00Z ===== 5/6 esperando GitOps: sa-p9-root y aplicaciones hijas Synced + Healthy =====
+2026-10-16T08:11:00Z esperando: argo-rollouts=/ sa-p9-root=OutOfSync/Progressing sealed-secrets=/ 
+2026-10-16T08:11:20Z esperando: argo-rollouts=Synced/Progressing kyverno=OutOfSync/Healthy sa-p9-root=OutOfSync/Progressing sealed-secrets=Synced/Healthy 
+2026-10-16T08:11:40Z esperando: argo-rollouts=Synced/Healthy kyverno=OutOfSync/Progressing sa-p9-root=OutOfSync/Progressing sealed-secrets=Synced/Healthy 
+2026-10-16T08:12:00Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Progressing sa-p9-root=OutOfSync/Progressing sealed-secrets=Synced/Healthy 
+2026-10-16T08:12:20Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:12:41Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:13:01Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:13:21Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:13:41Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:14:01Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:14:21Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+2026-10-16T08:14:42Z todas Synced/Healthy: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Healthy sa-platform=Synced/Healthy sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+
+2026-10-16T08:14:42Z ===== 6/6 verificacion del servicio =====
+2026-10-16T08:14:44Z api-gateway /health: {"servicio":"api-gateway","estado":"ok","destinos":{"auth":"http://sa-platform-ms-auth:3001","lotes":"http://sa-platform-ms-lotes:3002","aprobaciones":"http://sa-platform-ms-aprobaciones:3003","notificaciones":"http://sa-platform-ms-notificaciones:3004"}}
+2026-10-16T08:14:44Z restauracion dr-20261016081038: fase=Completed volumen=118973898 bytes
+
+2026-10-16T08:14:44Z ===== T_fin bootstrap: duracion 7 min 40 s =====
