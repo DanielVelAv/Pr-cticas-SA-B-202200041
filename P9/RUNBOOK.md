@@ -163,7 +163,14 @@ Con el clúster funcionando. Restaura **solo** PostgreSQL desde un respaldo; el 
    kubectl --context kind-sa-p9 -n argocd patch application sa-p9-root --type merge \
      -p '{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
    ```
-   Verificar a los ~30 s: `kubectl --context kind-sa-p9 -n argocd get applications` → todo `Synced`.
+   Reactivar `automated` no basta: ArgoCD no vuelve a sincronizar solo una revisión que ya aplicó.
+   Forzar un sync de la raíz (devuelve el auto-sync a `sa-platform`):
+   ```bash
+   kubectl --context kind-sa-p9 -n argocd patch application sa-p9-root --type merge \
+     -p '{"operation":{"initiatedBy":{"username":"operador"},"sync":{"revision":"main"}}}'
+   ```
+   Verificar a los ~30 s: `kubectl --context kind-sa-p9 -n argocd get applications` → todo `Synced`, y
+   `kubectl --context kind-sa-p9 -n argocd get application sa-platform -o jsonpath='{.spec.syncPolicy.automated}'` → `{"prune":true,"selfHeal":true}`.
 
 ---
 

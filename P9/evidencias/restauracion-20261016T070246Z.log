@@ -1,0 +1,33 @@
+2026-10-16T07:02:46Z == Prueba de restauracion de datos (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/restauracion-20261016T070246Z.log)
+2026-10-16T07:02:46Z respaldo programado: sa-p9-horario-20261016070028 (inicio 2026-10-16T07:00:28Z, completado 2026-10-16T07:02:14Z)
+2026-10-16T07:02:47Z antes de escribir: usuarios=5 latidos=110 ultimo_latido=2026-10-16 07:02:46.1435+00
+2026-10-16T07:02:50Z usuario POSTERIOR al respaldo creado: dr-post-070250-1@usac.edu.gt (se espera que se pierda)
+2026-10-16T07:02:50Z usuario POSTERIOR al respaldo creado: dr-post-070250-2@usac.edu.gt (se espera que se pierda)
+2026-10-16T07:02:50Z usuario POSTERIOR al respaldo creado: dr-post-070250-3@usac.edu.gt (se espera que se pierda)
+2026-10-16T07:02:50Z latido (corriendo (pid 335361)); escrituras durante 180s mas
+2026-10-16T07:05:51Z justo antes del desastre: usuarios=8 latidos=128 ultimo_latido=2026-10-16 07:05:50.462309+00
+2026-10-16T07:05:51Z pausando auto-sync de ArgoCD (sa-p9-root y sa-platform)
+2026-10-16T07:05:51Z T_desastre: eliminando StatefulSet y PVC de PostgreSQL
+statefulset.apps "sa-platform-postgresql" deleted from sa-p9-produccion namespace
+persistentvolumeclaim "data-sa-platform-postgresql-0" deleted from sa-p9-produccion namespace
+2026-10-16T07:05:53Z login de dr-20261016063828-1@usac.edu.gt sin base de datos: HTTP 500
+2026-10-16T07:05:53Z T_restore_inicio: velero restore prueba-20261016070553 desde sa-p9-horario-20261016070028
+2026-10-16T07:07:04Z T_restore_fin: fase=Completed
+   PodVolumeRestore prueba-20261016070553-9265k Completed 30891 bytes
+   PodVolumeRestore prueba-20261016070553-pzmlc Completed 119290578 bytes
+   PodVolumeRestore prueba-20261016070553-qcsnr Completed 1076952 bytes
+2026-10-16T07:07:09Z T_postgres_disponible
+2026-10-16T07:07:10Z restaurado: usuarios=5 (antes del desastre: 8) latidos=105 ultimo_latido=2026-10-16 07:01:54.950175+00
+2026-10-16T07:07:15Z login usuario PREVIO al respaldo (dr-20261016063828-1@usac.edu.gt): HTTP 200
+2026-10-16T07:07:15Z login admin semilla: HTTP 200
+2026-10-16T07:07:15Z login usuario POSTERIOR (dr-post-070250-1@usac.edu.gt): HTTP 401 (401 = perdido, esperado)
+2026-10-16T07:07:15Z login usuario POSTERIOR (dr-post-070250-2@usac.edu.gt): HTTP 401 (401 = perdido, esperado)
+2026-10-16T07:07:15Z login usuario POSTERIOR (dr-post-070250-3@usac.edu.gt): HTTP 401 (401 = perdido, esperado)
+2026-10-16T07:07:15Z auto-sync de ArgoCD reactivado
+2026-10-16T07:07:15Z == RESUMEN
+2026-10-16T07:07:15Z    respaldo usado      : sa-p9-horario-20261016070028 (inicio 2026-10-16T07:00:28Z)
+2026-10-16T07:07:15Z    T_desastre          : 2026-10-16T07:05:51Z
+2026-10-16T07:07:15Z    ultimo latido previo: 2026-10-16 07:05:50.462309+00
+2026-10-16T07:07:15Z    ultimo latido rest. : 2026-10-16 07:01:54.950175+00
+2026-10-16T07:07:15Z    RPO real            : 237s (3 min 57 s)
+2026-10-16T07:07:15Z    tiempo de restauracion (T_desastre -> postgres disponible): 78s

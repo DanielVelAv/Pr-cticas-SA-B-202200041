@@ -44,6 +44,11 @@ argocd_auto() {  # on|off para la app raiz y sa-platform
   [ "$1" = on ] && p='{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
   $K -n argocd patch application sa-p9-root --type merge -p "$p" >/dev/null
   [ "$1" = off ] && $K -n argocd patch application sa-platform --type merge -p "$p" >/dev/null
+  # Reactivar automated no basta: ArgoCD no re-sincroniza solo una revision
+  # que ya habia sincronizado. Se fuerza un sync de la raiz, que devuelve
+  # la politica automated a sa-platform.
+  [ "$1" = on ] && $K -n argocd patch application sa-p9-root --type merge \
+    -p '{"operation":{"initiatedBy":{"username":"prueba-restauracion"},"sync":{"revision":"main"}}}' >/dev/null
   return 0
 }
 
