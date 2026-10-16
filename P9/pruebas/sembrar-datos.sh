@@ -24,7 +24,7 @@ log() { echo "$(ts) $*" | tee -a "$LOG"; }
 
 psql_auth() {
   $K exec sa-platform-postgresql-0 -- sh -c \
-    'PGPASSWORD="${POSTGRES_POSTGRES_PASSWORD:-$POSTGRES_PASSWORD}" psql -U postgres -d auth_db -v ON_ERROR_STOP=1 -At -c "$0"' "$1"
+    'PGPASSWORD="$(cat "$POSTGRES_POSTGRES_PASSWORD_FILE")" psql -U postgres -d auth_db -v ON_ERROR_STOP=1 -At -c "$0"' "$1"
 }
 
 log "inicio siembra: N=$N etiqueta=$ETIQUETA ns=$NS"
