@@ -41,7 +41,7 @@ flowchart TD
     B5["4. Secret con la llave de Sealed Secrets<br/>(etiqueta active)"]
     B6["5. Velero + node-agent<br/>BSL → R2"]
     B7{"¿Hay respaldo Completed<br/>de sa-p9-horario?"}
-    B7a["6. velero restore<br/>solo PostgreSQL (sts + PVC + pod)"]
+    B7a["6. velero restore (sin esperar)<br/>crea sts + PVC + pod de PostgreSQL;<br/>el volumen se llena cuando<br/>exista el Secret (wave -1)"]
     B8["7. ArgoCD (Helm)"]
     B9["8. App raíz sa-p9-root<br/>(app-of-apps)"]
     B1 --> B2
@@ -66,6 +66,7 @@ flowchart TD
     W1b["wave -1: secretos<br/>(SealedSecret → Secret)"]
     W0["wave 0: velero-schedule<br/>(cada hora, ttl 168h)"]
     W1["wave 1: sa-platform<br/>Rollout gateway, ms-auth ×2,<br/>PostgreSQL (adopta lo restaurado), PDB"]
+    W1b -. "Secret → PostgreSQL arranca<br/>y Velero restaura el volumen" .-> B7a
     W3a --> W1b
     W3b --> W1
     W2 --> W1a --> W1
@@ -98,6 +99,7 @@ flowchart TD
 | Clúster → todo lo demás (apply en dos fases) | Los providers `helm` y `kubernetes` se configuran con las credenciales del clúster; si no existe, no pueden planificar. |
 | Llave de Sealed Secrets → ArgoCD | Si el controlador arranca sin llave, genera una nueva y los SealedSecret del repo no se pueden descifrar. |
 | Velero y restauración → app raíz | Si ArgoCD sincroniza primero, crea un PostgreSQL con volumen **vacío**; la restauración tiene que llegar antes para que ArgoCD **adopte** la base restaurada. |
+| Restauración lanzada, **no esperada** | El pod de PostgreSQL monta su contraseña desde el Secret que entrega Sealed Secrets (wave -1). Esperar el restore antes de ArgoCD era un deadlock (restore → Secret → ArgoCD → restore), detectado en un ensayo. El volumen termina de restaurarse cuando llega el Secret; `bootstrap.sh` lo verifica al final. |
 | StorageClass `local-velero` → Velero/PostgreSQL | Velero File System Backup no respalda volúmenes `hostPath`; esta clase crea volúmenes `local`. |
 | wave -3 → -2 → -1 → 0 → 1 | CRDs y controladores (Sealed Secrets, Rollouts, Kyverno) antes que los recursos que los usan (SealedSecret, Rollout, ClusterPolicy) y antes que la aplicación. |
 | Schedule en GitOps, Velero en Terraform | El calendario y la retención son configuración versionada; el motor de respaldo es infraestructura que tiene que existir antes de restaurar. |

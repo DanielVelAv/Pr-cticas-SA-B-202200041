@@ -113,5 +113,25 @@ done
 [ -n "$ok" ] || falla "/health del api-gateway no responde"
 echo "$(ts) api-gateway /health: $salud"
 
+# Si hubo restauracion, confirmar que el VOLUMEN se restauro (termina
+# despues de que ArgoCD entrega el Secret de PostgreSQL). Si no, repetirla
+# automaticamente (procedimiento B del RUNBOOK) sin intervencion manual.
+restore=$(kubectl --context "$CTX" -n velero get restores -o jsonpath='{range .items[*]}{.metadata.creationTimestamp}{" "}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep ' dr-' | sort | tail -1 | awk '{print $2}')
+if [ -n "$restore" ]; then
+  for _ in $(seq 1 60); do
+    fase=$(kubectl --context "$CTX" -n velero get restore "$restore" -o jsonpath='{.status.phase}')
+    case "$fase" in Completed|PartiallyFailed|Failed) break ;; esac
+    sleep 5
+  done
+  bytes=$(kubectl --context "$CTX" -n velero get podvolumerestores -l "velero.io/restore-name=$restore" \
+    -o jsonpath='{range .items[?(@.status.phase=="Completed")]}{.status.progress.totalBytes}{"\n"}{end}' | sort -n | tail -1)
+  echo "$(ts) restauracion $restore: fase=$fase volumen=${bytes:-0} bytes"
+  if [ "${bytes:-0}" -lt 1000000 ]; then
+    backup=$(kubectl --context "$CTX" -n velero get restore "$restore" -o jsonpath='{.spec.backupName}')
+    echo "$(ts) el volumen de PostgreSQL NO se restauro -> reintento automatico"
+    "$RAIZ/scripts/reintentar-restauracion.sh" "$backup" || falla "la restauracion de datos fallo dos veces (ver RUNBOOK B)"
+  fi
+fi
+
 T1=$(date +%s)
 etapa "T_fin bootstrap: duracion $(( (T1 - T0) / 60 )) min $(( (T1 - T0) % 60 )) s"

@@ -88,9 +88,9 @@ Etapas que debe mostrar, en orden:
 | 1/6 prerrequisitos | revisa herramientas, `terraform login`, credenciales, inotify | `ok` |
 | 2/6 terraform init | conecta con el estado remoto en HCP | `ok` |
 | 3/6 fase 1 | si el estado recuerda un clúster que ya no existe: `DESASTRE DETECTADO ... state rm`; crea el clúster kind (1 control-plane + 2 workers) | `Apply complete!` y 3 nodos listados |
-| 4/6 fase 2 | StorageClass, namespaces, cuotas, RBAC, llave de Sealed Secrets, Velero, **restauración de PostgreSQL**, ArgoCD, app raíz | líneas `[restaurar-datos] respaldo elegido: ...` y `T_restore_fin ... fase=Completed`; `Apply complete!` |
+| 4/6 fase 2 | StorageClass, namespaces, cuotas, RBAC, llave de Sealed Secrets, Velero, **restauración de PostgreSQL**, ArgoCD, app raíz | líneas `[restaurar-datos] respaldo elegido: ...` y `StatefulSet y PVC de PostgreSQL restaurados`; `Apply complete!` |
 | 5/6 GitOps | espera a que todas las Applications estén Synced/Healthy | `todas Synced/Healthy` |
-| 6/6 servicio | `/health` del api-gateway | `"estado":"ok"` |
+| 6/6 servicio | `/health` del api-gateway y fin de la restauración del volumen | `"estado":"ok"` y `restauracion dr-... fase=Completed` |
 
 Si falla:
 - **Etapa 1**: el mensaje dice qué falta → volver a la sección 1.
@@ -148,14 +148,21 @@ Con el clúster funcionando. Restaura **solo** PostgreSQL desde un respaldo; el 
    ```bash
    kubectl --context kind-sa-p9 -n sa-p9-produccion delete statefulset sa-platform-postgresql
    kubectl --context kind-sa-p9 -n sa-p9-produccion delete pvc data-sa-platform-postgresql-0
+   kubectl --context kind-sa-p9 -n sa-p9-produccion wait --for=delete pod/sa-platform-postgresql-0 --timeout=180s
    ```
+   **No saltar el `wait`**: si el pod viejo aún existe cuando se restaura, Velero lo omite
+   ("ya existe"), no restaura el volumen y la base arranca **vacía** aunque el restore diga
+   `Completed`. Verificar en el paso 4 que aparezca un `PodVolumeRestore` con bytes.
 4. **Restaurar**:
    ```bash
    velero --kubecontext kind-sa-p9 restore create --from-backup "$BACKUP" \
      --include-namespaces sa-p9-produccion --selector app.kubernetes.io/name=postgresql --wait
    velero --kubecontext kind-sa-p9 restore get
    ```
-   Esperado: `Completed`. Si sale `PartiallyFailed`: `velero --kubecontext kind-sa-p9 restore describe <nombre> --details`.
+   Esperado: `Completed` **y** al menos un PodVolumeRestore `Completed` con ~100 MB:
+   `kubectl --context kind-sa-p9 -n velero get podvolumerestores -l velero.io/restore-name=<nombre>`.
+   Si no hay ninguno, el volumen no se restauró: repetir desde el paso 3.
+   Si sale `PartiallyFailed`: `velero --kubecontext kind-sa-p9 restore describe <nombre> --details`.
 5. **Esperar a la base**: `kubectl --context kind-sa-p9 -n sa-p9-produccion wait --for=condition=Ready pod/sa-platform-postgresql-0 --timeout=300s`
 6. **Verificar el contenido**: igual que A.3 (conteo y login).
 7. **Reactivar ArgoCD** (la raíz devuelve también la política de `sa-platform`):
@@ -219,7 +226,11 @@ cifrados de los usuarios quedan **ilegibles**. Por eso la copia fuera de línea 
 ### E.1 Terraform bloqueado
 Síntoma: `Error acquiring the state lock` (otra persona aplica, o un `apply` anterior se interrumpió).
 1. Confirmar en https://app.terraform.io → `Sa9/sa-p9` que **nadie** está aplicando.
-2. `terraform -chdir=P9/terraform force-unlock <Lock ID mostrado en el error>`
+2. `terraform -chdir=P9/terraform force-unlock -force "Sa9/sa-p9"`
+   (con HCP Terraform el ID que acepta es el **nombre del workspace**, que aparece como
+   `lock ID: "Sa9/sa-p9"` en el error; el UUID de la línea `ID:` es rechazado).
+3. Volver a ejecutar `./P9/bootstrap.sh`: retoma desde lo que quedó a medias.
+   Ocurrió en las pruebas cuando un bootstrap se interrumpió en la fase 2.
 
 ### E.2 Un respaldo se queda `InProgress`
 Síntoma: `velero backup get` muestra `InProgress` por más de 10 min (visto en las pruebas).

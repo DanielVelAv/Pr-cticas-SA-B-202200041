@@ -47,21 +47,27 @@ log "respaldo elegido: $backup (completado $backup_ts)"
 
 # 3. Restauracion selectiva: solo PostgreSQL (StatefulSet, PVC, pod...).
 #    El resto lo recrea ArgoCD desde git.
+#
+#    NO se espera a que termine (--wait): el pod de PostgreSQL monta su
+#    contrasena desde el Secret sa-platform-secrets, que solo existe cuando
+#    ArgoCD instala Sealed Secrets y aplica el SealedSecret. Hasta entonces
+#    el pod no arranca, ni siquiera el init container restore-wait que recibe
+#    los datos. Esperar aqui seria un deadlock (restore -> Secret -> ArgoCD
+#    -> restore). Basta con que el StatefulSet y el PVC ya existan cuando
+#    ArgoCD sincronice: los adopta en vez de crear una base vacia. El volumen
+#    termina de restaurarse solo; bootstrap.sh verifica el resultado al final.
 restore="dr-$(date -u +%Y%m%d%H%M%S)"
 log "T_restore_inicio $(ts) -> $restore"
 velero --kubecontext "$CTX" restore create "$restore" \
   --from-backup "$backup" \
   --include-namespaces "$NS" \
-  --selector "$SELECTOR" \
-  --wait >/dev/null
+  --selector "$SELECTOR" >/dev/null
 
-fase=$($K get restore "$restore" -o jsonpath='{.status.phase}')
-log "T_restore_fin $(ts) fase=$fase"
-$K get podvolumerestores -l "velero.io/restore-name=$restore" --no-headers 2>/dev/null \
-  | awk '{print "  PodVolumeRestore", $1, $2, $4" bytes"}' || true
-
-case "$fase" in
-  Completed) exit 0 ;;
-  PartiallyFailed) log "ADVERTENCIA: restore parcial, revisar: velero restore describe $restore --details"; exit 0 ;;
-  *) log "ERROR: restore $restore en fase $fase"; exit 1 ;;
-esac
+for i in $(seq 1 60); do
+  kubectl --context "$CTX" -n "$NS" get statefulset sa-platform-postgresql >/dev/null 2>&1 \
+    && kubectl --context "$CTX" -n "$NS" get pvc data-sa-platform-postgresql-0 >/dev/null 2>&1 && break
+  [ "$i" -eq 60 ] && { log "ERROR: el restore $restore no creo el StatefulSet/PVC"; exit 1; }
+  sleep 5
+done
+log "StatefulSet y PVC de PostgreSQL restaurados (el volumen se completa cuando exista el Secret)"
+exit 0

@@ -1,0 +1,117 @@
+2026-10-16T07:27:26Z == Prueba de recuperacion ante desastre (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/reconstruccion-20261016T072726Z.log)
+2026-10-16T07:27:26Z ultimo respaldo programado: sa-p9-horario-20261016070028 (completado 2026-10-16T07:02:14Z)
+error: Internal error occurred: unable to upgrade connection: container not found ("postgresql")
+error: Internal error occurred: unable to upgrade connection: container not found ("postgresql")
+error: Internal error occurred: unable to upgrade connection: container not found ("postgresql")
+2026-10-16T07:27:27Z antes del desastre: usuarios= latidos= ultimo_latido=
+No resources found in argocd namespace.
+2026-10-16T07:27:27Z apps ArgoCD: 
+2026-10-16T07:27:27Z T_desastre: kind delete cluster --name sa-p9
+   Deleting cluster "sa-p9" ...
+   Deleted nodes: ["sa-p9-control-plane" "sa-p9-worker" "sa-p9-worker2"]
+2026-10-16T07:27:30Z clusters kind restantes: []
+2026-10-16T07:27:30Z T_inicio_reconstruccion: ./P9/bootstrap.sh
+   | 
+   | 2026-10-16T07:27:30Z ===== T_inicio bootstrap (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/bootstrap-20261016T072730Z.log) =====
+   | 
+   | 2026-10-16T07:27:30Z ===== 1/6 prerrequisitos =====
+   | ok
+   | 
+   | 2026-10-16T07:27:30Z ===== 2/6 terraform init (backend remoto HCP Terraform) =====
+   | ok
+   | 
+   | 2026-10-16T07:27:34Z ===== 3/6 terraform apply fase 1: cluster kind =====
+   | 2026-10-16T07:27:35Z DESASTRE DETECTADO: el estado remoto tiene kind_cluster.sa_p9 pero el cluster no existe -> state rm
+   | Removed kind_cluster.sa_p9
+   | Successfully removed 1 resource instance(s).
+   | kind_cluster.sa_p9: Creating...
+   | kind_cluster.sa_p9: Creation complete after 45s [id=sa-p9-kindest/node:v1.31.0]
+   | Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+   |   nodo sa-p9-control-plane Ready
+   |   nodo sa-p9-worker NotReady
+   |   nodo sa-p9-worker2 NotReady
+   | 
+   | 2026-10-16T07:28:28Z ===== 4/6 terraform apply fase 2: plataforma (ns, llave, Velero, restore, ArgoCD, app raiz) =====
+   | null_resource.restaurar_datos[0]: Destruction complete after 0s
+   | kubernetes_secret_v1.sealed_secrets_key: Creation complete after 0s [id=kube-system/sealed-secrets-key-sa-p9]
+   | kubernetes_storage_class_v1.local_velero: Creation complete after 0s [id=local-velero]
+   | kubernetes_namespace_v1.ambiente["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging]
+   | kubernetes_namespace_v1.velero: Creation complete after 0s [id=velero]
+   | kubernetes_namespace_v1.ambiente["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion]
+   | kubernetes_annotations.standard_no_default: Modifications complete after 0s [id=apiVersion=storage.k8s.io/v1,kind=StorageClass,name=standard]
+   | kubernetes_secret_v1.velero_r2: Creation complete after 0s [id=velero/velero-r2]
+   | kubernetes_service_account_v1.auditor["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-auditor]
+   | kubernetes_limit_range_v1.limites["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-limites]
+   | kubernetes_limit_range_v1.limites["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-limites]
+   | kubernetes_service_account_v1.auditor["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-auditor]
+   | kubernetes_role_v1.solo_lectura["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-solo-lectura]
+   | kubernetes_role_v1.solo_lectura["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-solo-lectura]
+   | kubernetes_role_binding_v1.solo_lectura["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-solo-lectura]
+   | kubernetes_role_binding_v1.solo_lectura["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-solo-lectura]
+   | kubernetes_resource_quota_v1.cuota["sa-p9-produccion"]: Creation complete after 0s [id=sa-p9-produccion/sa-platform-cuota]
+   | kubernetes_resource_quota_v1.cuota["sa-p9-staging"]: Creation complete after 0s [id=sa-p9-staging/sa-platform-cuota]
+   | helm_release.velero: Creation complete after 1m19s [id=velero]
+   | null_resource.restaurar_datos[0] (local-exec): Executing: ["/bin/sh" "-c" "./../scripts/restaurar-datos.sh"]
+   | null_resource.restaurar_datos[0] (local-exec): 2026-10-16T07:30:23Z [restaurar-datos] inicio (ns=sa-p9-produccion schedule=sa-p9-horario)
+   | helm_release.argocd: Creation complete after 1m45s [id=argocd]
+   | null_resource.restaurar_datos[0] (local-exec): 2026-10-16T07:31:15Z [restaurar-datos] BSL Available, ultima sincronizacion 2026-10-16T07:31:12Z
+   | null_resource.restaurar_datos[0] (local-exec): 2026-10-16T07:31:15Z [restaurar-datos] respaldo elegido: sa-p9-horario-20261016070028 (completado 2026-10-16T07:02:14Z)
+   | null_resource.restaurar_datos[0] (local-exec): 2026-10-16T07:31:15Z [restaurar-datos] T_restore_inicio 2026-10-16T07:31:15Z -> dr-20261016073115
+   | null_resource.restaurar_datos[0] (local-exec): 2026-10-16T07:31:21Z [restaurar-datos] StatefulSet y PVC de PostgreSQL restaurados (el volumen se completa cuando exista el Secret)
+   | null_resource.restaurar_datos[0]: Creation complete after 59s [id=7210699041615658827]
+   | helm_release.root_app: Creation complete after 6s [id=sa-p9-root]
+   | Apply complete! Resources: 20 added, 1 changed, 1 destroyed.
+   | certificado publico de Sealed Secrets -> P9/sealed-secrets-pub.pem
+   | 
+   | 2026-10-16T07:31:37Z ===== 5/6 esperando GitOps: sa-p9-root y aplicaciones hijas Synced + Healthy =====
+   | 2026-10-16T07:31:37Z esperando: sa-p9-root=OutOfSync/Missing 
+   | 2026-10-16T07:31:57Z esperando: argo-rollouts=Synced/Healthy kyverno=OutOfSync/Missing sa-p9-root=OutOfSync/Healthy sealed-secrets=Synced/Healthy 
+   | 2026-10-16T07:32:17Z esperando: argo-rollouts=Synced/Healthy kyverno=OutOfSync/Progressing politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=OutOfSync/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:32:39Z esperando: argo-rollouts=Synced/Healthy kyverno=OutOfSync/Progressing politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:32:59Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:33:19Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:33:40Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:34:00Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:34:20Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:34:40Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:35:00Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:35:20Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:35:40Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:36:01Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:36:21Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:36:41Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:37:01Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:37:21Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:37:41Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:38:01Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:38:22Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:38:42Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:39:02Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:39:22Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:39:42Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:40:02Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:40:22Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:40:43Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:41:03Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:41:23Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:41:43Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:42:03Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Progressing sa-platform=Synced/Progressing sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:42:23Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:42:44Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:43:04Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:43:24Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:43:44Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:44:04Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:44:24Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:44:44Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:45:05Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:45:25Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:45:45Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:46:05Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:46:25Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:46:45Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=OutOfSync/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:47:06Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:47:26Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:47:46Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:48:06Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
+   | 2026-10-16T07:48:26Z esperando: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Degraded sa-platform=Synced/Degraded sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 

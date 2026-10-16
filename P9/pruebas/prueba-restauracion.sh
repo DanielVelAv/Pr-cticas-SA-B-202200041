@@ -88,6 +88,8 @@ T_DESASTRE=$(ts)
 log "T_desastre: eliminando StatefulSet y PVC de PostgreSQL"
 $K -n "$NS" delete statefulset sa-platform-postgresql --wait=true
 $K -n "$NS" delete pvc data-sa-platform-postgresql-0 --wait=true
+# Si el pod viejo sigue existiendo, Velero lo omite y no restaura el volumen.
+$K -n "$NS" wait --for=delete pod/sa-platform-postgresql-0 --timeout=180s 2>/dev/null || true
 log "login de $USUARIO_PREVIO sin base de datos: HTTP $(login "$USUARIO_PREVIO")"
 
 # 4. Restauracion desde el respaldo programado
