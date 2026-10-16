@@ -1,0 +1,7 @@
+2026-10-16T06:38:28Z inicio siembra: N=3 etiqueta=20261016063828 ns=sa-p9-produccion
+2026-10-16T06:38:29Z registro dr-20261016063828-1@usac.edu.gt -> HTTP 201
+2026-10-16T06:38:30Z registro dr-20261016063828-2@usac.edu.gt -> HTTP 201
+2026-10-16T06:38:30Z registro dr-20261016063828-3@usac.edu.gt -> HTTP 201
+2026-10-16T06:38:31Z usuarios en auth_db: 5
+2026-10-16T06:38:31Z ultimo latido: 2026-10-16 06:38:30.897135+00
+2026-10-16T06:38:31Z fin siembra (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/siembra-20261016T063828Z.log)
