@@ -1,0 +1,182 @@
+2026-10-16T06:39:58Z == Prueba de perdida de nodo (log: /home/dolyad/Documentos/Github/Pr-cticas-SA-B-202200041/P9/evidencias/nodo-20261016T063958Z.log)
+2026-10-16T06:39:58Z estado inicial:
+   sa-platform-api-gateway-6f9c75bf5-w5fjp       Running  sa-p9-worker2
+   sa-platform-api-gateway-6f9c75bf5-zkkx4       Running  sa-p9-worker
+   sa-platform-ms-auth-679df67fbd-pnhmr          Running  sa-p9-worker
+   sa-platform-ms-auth-679df67fbd-x5drs          Running  sa-p9-worker2
+   sa-platform-postgresql-0                      Running  sa-p9-worker2
+   PDB sa-platform-api-gateway        allowed-disruptions=40m
+   PDB sa-platform-ms-auth            allowed-disruptions=40m
+   PDB sa-platform-postgresql         allowed-disruptions=40m
+2026-10-16T06:39:59Z PostgreSQL en sa-p9-worker2 -> se drena sa-p9-worker
+2026-10-16T06:40:04Z sonda corriendo en el control-plane; linea base 15 s
+2026-10-16T06:40:19Z T_drain_inicio: kubectl drain sa-p9-worker
+   evicting pod argo-rollouts/argo-rollouts-589485ffdb-ttcc8
+   evicting pod velero/velero-8d58f5b66-v2lh2
+   evicting pod argocd/argocd-server-7c47b57555-xl9wg
+   evicting pod sa-p9-produccion/sa-platform-api-gateway-6f9c75bf5-zkkx4
+   evicting pod argocd/argocd-redis-b9647cd7b-txnns
+   evicting pod argocd/argocd-application-controller-0
+   evicting pod sa-p9-produccion/sa-platform-ms-auth-679df67fbd-pnhmr
+   pod/argocd-server-7c47b57555-xl9wg evicted
+   pod/velero-8d58f5b66-v2lh2 evicted
+   pod/argo-rollouts-589485ffdb-ttcc8 evicted
+   pod/argocd-redis-b9647cd7b-txnns evicted
+   pod/argocd-application-controller-0 evicted
+   pod/sa-platform-api-gateway-6f9c75bf5-zkkx4 evicted
+   pod/sa-platform-ms-auth-679df67fbd-pnhmr evicted
+   node/sa-p9-worker drained
+2026-10-16T06:40:51Z T_drain_fin: nodo drenado; servicio sostenido durante 120s
+   sa-platform-api-gateway-6f9c75bf5-w5fjp       Running  sa-p9-worker2
+   sa-platform-api-gateway-6f9c75bf5-w8l22       Running  sa-p9-worker2
+   sa-platform-ms-auth-679df67fbd-8gwpl          Pending  <none>
+   sa-platform-ms-auth-679df67fbd-x5drs          Running  sa-p9-worker2
+   sa-platform-postgresql-0                      Running  sa-p9-worker2
+   sonda                                         Running  sa-p9-control-plane
+2026-10-16T06:42:51Z T_uncordon: devolviendo sa-p9-worker
+2026-10-16T06:43:01Z == Registro de la sonda (1 linea por segundo)
+   06:40:04 gateway=200 ms-auth=200 login=200
+   06:40:05 gateway=200 ms-auth=200 login=200
+   06:40:07 gateway=200 ms-auth=200 login=200
+   06:40:08 gateway=200 ms-auth=200 login=200
+   06:40:09 gateway=200 ms-auth=200 login=200
+   06:40:11 gateway=200 ms-auth=200 login=200
+   06:40:12 gateway=200 ms-auth=200 login=200
+   06:40:13 gateway=200 ms-auth=200 login=200
+   06:40:14 gateway=200 ms-auth=200 login=200
+   06:40:16 gateway=200 ms-auth=200 login=200
+   06:40:17 gateway=200 ms-auth=200 login=200
+   06:40:18 gateway=200 ms-auth=200 login=200
+   06:40:20 gateway=200 ms-auth=200 login=200
+   06:40:21 gateway=200 ms-auth=200 login=200
+   06:40:23 gateway=200 ms-auth=200 login=200
+   06:40:24 gateway=200 ms-auth=200 login=200
+   06:40:25 gateway=200 ms-auth=200 login=200
+   06:40:26 gateway=200 ms-auth=200 login=200
+   06:40:28 gateway=200 ms-auth=200 login=200
+   06:40:29 gateway=200 ms-auth=200 login=200
+   06:40:30 gateway=200 ms-auth=200 login=200
+   06:40:32 gateway=200 ms-auth=200 login=200
+   06:40:33 gateway=200 ms-auth=200 login=200
+   06:40:34 gateway=200 ms-auth=200 login=200
+   06:40:36 gateway=200 ms-auth=200 login=200
+   06:40:37 gateway=200 ms-auth=200 login=200
+   06:40:38 gateway=200 ms-auth=200 login=200
+   06:40:40 gateway=200 ms-auth=200 login=200
+   06:40:41 gateway=200 ms-auth=200 login=200
+   06:40:42 gateway=200 ms-auth=200 login=200
+   06:40:44 gateway=200 ms-auth=200 login=200
+   06:40:45 gateway=200 ms-auth=200 login=200
+   06:40:46 gateway=200 ms-auth=200 login=200
+   06:40:47 gateway=200 ms-auth=200 login=200
+   06:40:49 gateway=200 ms-auth=200 login=200
+   06:40:50 gateway=200 ms-auth=200 login=200
+   06:40:51 gateway=200 ms-auth=200 login=200
+   06:40:53 gateway=200 ms-auth=200 login=200
+   06:40:54 gateway=200 ms-auth=200 login=200
+   06:40:55 gateway=200 ms-auth=200 login=200
+   06:40:57 gateway=200 ms-auth=200 login=200
+   06:40:58 gateway=200 ms-auth=200 login=200
+   06:40:59 gateway=200 ms-auth=200 login=200
+   06:41:01 gateway=200 ms-auth=200 login=200
+   06:41:02 gateway=200 ms-auth=200 login=200
+   06:41:03 gateway=200 ms-auth=200 login=200
+   06:41:05 gateway=200 ms-auth=200 login=200
+   06:41:06 gateway=200 ms-auth=200 login=200
+   06:41:07 gateway=200 ms-auth=200 login=200
+   06:41:08 gateway=200 ms-auth=200 login=200
+   06:41:10 gateway=200 ms-auth=200 login=200
+   06:41:11 gateway=200 ms-auth=200 login=200
+   06:41:12 gateway=200 ms-auth=200 login=200
+   06:41:13 gateway=200 ms-auth=200 login=200
+   06:41:15 gateway=200 ms-auth=200 login=200
+   06:41:16 gateway=200 ms-auth=200 login=200
+   06:41:17 gateway=200 ms-auth=200 login=200
+   06:41:19 gateway=200 ms-auth=200 login=200
+   06:41:20 gateway=200 ms-auth=200 login=200
+   06:41:21 gateway=200 ms-auth=200 login=200
+   06:41:23 gateway=200 ms-auth=200 login=200
+   06:41:24 gateway=200 ms-auth=200 login=200
+   06:41:25 gateway=200 ms-auth=200 login=200
+   06:41:26 gateway=200 ms-auth=200 login=200
+   06:41:28 gateway=200 ms-auth=200 login=200
+   06:41:29 gateway=200 ms-auth=200 login=200
+   06:41:30 gateway=200 ms-auth=200 login=200
+   06:41:32 gateway=200 ms-auth=200 login=200
+   06:41:33 gateway=200 ms-auth=200 login=200
+   06:41:34 gateway=200 ms-auth=200 login=200
+   06:41:36 gateway=200 ms-auth=200 login=200
+   06:41:37 gateway=200 ms-auth=200 login=200
+   06:41:38 gateway=200 ms-auth=200 login=200
+   06:41:40 gateway=200 ms-auth=200 login=200
+   06:41:41 gateway=200 ms-auth=200 login=200
+   06:41:42 gateway=200 ms-auth=200 login=200
+   06:41:43 gateway=200 ms-auth=200 login=200
+   06:41:45 gateway=200 ms-auth=200 login=200
+   06:41:46 gateway=200 ms-auth=200 login=200
+   06:41:47 gateway=200 ms-auth=200 login=200
+   06:41:48 gateway=200 ms-auth=200 login=200
+   06:41:50 gateway=200 ms-auth=200 login=200
+   06:41:51 gateway=200 ms-auth=200 login=200
+   06:41:52 gateway=200 ms-auth=200 login=200
+   06:41:54 gateway=200 ms-auth=200 login=200
+   06:41:55 gateway=200 ms-auth=200 login=200
+   06:41:56 gateway=200 ms-auth=200 login=200
+   06:41:57 gateway=200 ms-auth=200 login=200
+   06:41:58 gateway=200 ms-auth=200 login=200
+   06:42:00 gateway=200 ms-auth=200 login=200
+   06:42:01 gateway=200 ms-auth=200 login=200
+   06:42:03 gateway=200 ms-auth=200 login=200
+   06:42:04 gateway=200 ms-auth=200 login=200
+   06:42:05 gateway=200 ms-auth=200 login=200
+   06:42:06 gateway=200 ms-auth=200 login=200
+   06:42:08 gateway=200 ms-auth=200 login=200
+   06:42:09 gateway=200 ms-auth=200 login=200
+   06:42:10 gateway=200 ms-auth=200 login=200
+   06:42:12 gateway=200 ms-auth=200 login=200
+   06:42:13 gateway=200 ms-auth=200 login=200
+   06:42:14 gateway=200 ms-auth=200 login=200
+   06:42:15 gateway=200 ms-auth=200 login=200
+   06:42:17 gateway=200 ms-auth=200 login=200
+   06:42:18 gateway=200 ms-auth=200 login=200
+   06:42:19 gateway=200 ms-auth=200 login=200
+   06:42:21 gateway=200 ms-auth=200 login=200
+   06:42:22 gateway=200 ms-auth=200 login=200
+   06:42:23 gateway=200 ms-auth=200 login=200
+   06:42:24 gateway=200 ms-auth=200 login=200
+   06:42:26 gateway=200 ms-auth=200 login=200
+   06:42:27 gateway=200 ms-auth=200 login=200
+   06:42:28 gateway=200 ms-auth=200 login=200
+   06:42:29 gateway=200 ms-auth=200 login=200
+   06:42:31 gateway=200 ms-auth=200 login=200
+   06:42:32 gateway=200 ms-auth=200 login=200
+   06:42:33 gateway=200 ms-auth=200 login=200
+   06:42:35 gateway=200 ms-auth=200 login=200
+   06:42:36 gateway=200 ms-auth=200 login=200
+   06:42:37 gateway=200 ms-auth=200 login=200
+   06:42:38 gateway=200 ms-auth=200 login=200
+   06:42:39 gateway=200 ms-auth=200 login=200
+   06:42:41 gateway=200 ms-auth=200 login=200
+   06:42:42 gateway=200 ms-auth=200 login=200
+   06:42:43 gateway=200 ms-auth=200 login=200
+   06:42:45 gateway=200 ms-auth=200 login=200
+   06:42:46 gateway=200 ms-auth=200 login=200
+   06:42:47 gateway=200 ms-auth=200 login=200
+   06:42:48 gateway=200 ms-auth=200 login=200
+   06:42:50 gateway=200 ms-auth=200 login=200
+   06:42:51 gateway=200 ms-auth=200 login=200
+   06:42:52 gateway=200 ms-auth=200 login=200
+   06:42:54 gateway=200 ms-auth=200 login=200
+   06:42:55 gateway=200 ms-auth=200 login=200
+   06:42:56 gateway=200 ms-auth=200 login=200
+   06:42:57 gateway=200 ms-auth=200 login=200
+   06:42:59 gateway=200 ms-auth=200 login=200
+   06:43:00 gateway=200 ms-auth=200 login=200
+2026-10-16T06:43:01Z == RESUMEN: nodo drenado=sa-p9-worker desde 2026-10-16T06:40:19Z; muestras=137; muestras con algun fallo=0
+2026-10-16T06:43:01Z estado final:
+   sa-platform-api-gateway-6f9c75bf5-w5fjp       Running  sa-p9-worker2
+   sa-platform-api-gateway-6f9c75bf5-w8l22       Running  sa-p9-worker2
+   sa-platform-ms-auth-679df67fbd-8gwpl          Running  sa-p9-worker
+   sa-platform-ms-auth-679df67fbd-x5drs          Running  sa-p9-worker2
+   sa-platform-postgresql-0                      Running  sa-p9-worker2
+   sonda                                         Terminating sa-p9-control-plane

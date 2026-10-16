@@ -43,3 +43,4 @@ terraform_*_linux_amd64.zip
 
 # Evidencias de P9 sí se versionan
 !P9/evidencias/*.log
+P9/evidencias/.latido.pid
