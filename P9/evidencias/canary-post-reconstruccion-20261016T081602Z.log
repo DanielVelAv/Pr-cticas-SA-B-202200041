@@ -1,0 +1,19 @@
+2026-10-16T08:16:02Z == Flujo de P8 tras la reconstruccion: canary con fallo inducido y reversion automatica
+2026-10-16T08:16:02Z (equivale al commit simularFallo="true" de P8; se aplica directo con ArgoCD pausado para no tocar el repo)
+2026-10-16T08:16:03Z SIMULAR_FALLO=true aplicado -> nueva revision del Rollout
+2026-10-16T08:16:03Z rollout: Progressing|more replicas need to be updated|paso=0
+2026-10-16T08:16:13Z rollout: Paused|CanaryPauseStep|paso=1
+2026-10-16T08:16:23Z rollout: Paused|CanaryPauseStep|paso=1
+2026-10-16T08:16:34Z rollout: Progressing|more replicas need to be updated|paso=2
+2026-10-16T08:16:44Z rollout: Progressing|more replicas need to be updated|paso=2
+2026-10-16T08:16:54Z rollout: Degraded|RolloutAborted: Rollout aborted update to revision 2: Step-based analysis phase error/failed: Metric "health-check-200" assessed Failed due to failed (3) > failureLimit (2)|paso=0
+2026-10-16T08:16:54Z AnalysisRuns:
+    sa-platform-api-gateway-7868969db-2-2 Failed
+   metrica=health-check-200 fase=Failed exitosas= fallidas=3
+2026-10-16T08:16:54Z pods del gateway (el estable sigue sirviendo):
+    sa-platform-api-gateway-6f9c75bf5-7tzmp 1/1 Running
+    sa-platform-api-gateway-6f9c75bf5-ff29m 1/1 Running
+    sa-platform-api-gateway-7868969db-57xtj 1/1 Terminating
+2026-10-16T08:16:54Z SIMULAR_FALLO=false (vuelta al estado del repo); reactivando ArgoCD
+2026-10-16T08:17:35Z rollout final: Healthy
+2026-10-16T08:17:35Z apps: argo-rollouts=Synced/Healthy kyverno=Synced/Healthy politicas=Synced/Healthy sa-p9-root=Synced/Healthy sa-platform=Synced/Healthy sealed-secrets=Synced/Healthy secretos=Synced/Healthy velero-schedule=Synced/Healthy 
