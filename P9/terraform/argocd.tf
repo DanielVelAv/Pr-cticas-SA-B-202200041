@@ -62,9 +62,17 @@ resource "helm_release" "root_app" {
           server    = "https://kubernetes.default.svc"
           namespace = "argocd"
         }
+        # ArgoCD agrega por su cuenta finalizers pre-delete a las apps hijas
+        # cuyo chart tiene hooks de borrado (kyverno); no estan en git y la
+        # raiz quedaria OutOfSync para siempre.
+        ignoreDifferences = [{
+          group        = "argoproj.io"
+          kind         = "Application"
+          jsonPointers = ["/metadata/finalizers"]
+        }]
         syncPolicy = {
           automated   = { prune = true, selfHeal = true }
-          syncOptions = ["CreateNamespace=true"]
+          syncOptions = ["CreateNamespace=true", "RespectIgnoreDifferences=true"]
           retry = {
             limit   = 10
             backoff = { duration = "10s", factor = 2, maxDuration = "3m" }
