@@ -21,6 +21,7 @@ Declarados el 2026-10-16 en [`OBJETIVOS-DR.md`](OBJETIVOS-DR.md) (commit `2bc0e2
 | Prueba | Inicio | Servicio verificado | Duración |
 |---|---|---|---|
 | Reconstrucción completa | T_desastre 08:06:59 | T_servicio 08:14:48 (login de un usuario previo al respaldo = 200) | **RTO = 7 min 49 s** |
+| Reconstrucción (2.ª corrida, 17/10, `reconstruccion-20261017T033911Z.log`) | T_desastre 03:39:12 | T_servicio 03:49:36 | **RTO = 10 min 24 s** |
 | Restauración de datos | T_desastre 07:05:51 | PostgreSQL disponible 07:07:09 | **78 s** |
 | Pérdida de nodo | drain 06:40:19 | servicio continuo hasta uncordon 06:42:51 | **0 fallos en 137 muestras** |
 
@@ -43,6 +44,7 @@ La mayor parte del RTO es arranque de ArgoCD y de las aplicaciones (≈ 6 min); 
 |---|---|---|---|
 | Restauración de datos | 07:01:54 | 07:05:51 | **3 min 57 s** |
 | Reconstrucción completa | 08:01:31 | 08:06:59 | **5 min 28 s** |
+| Reconstrucción (2.ª corrida) | 03:03:23 | 03:39:12 | **35 min 49 s** |
 
 **Datos no recuperados**: en la restauración de datos, los 3 usuarios creados después del respaldo (`dr-post-070250-{1,2,3}`, login 401 tras restaurar) y los latidos entre 07:01:54 y 07:05:50. En la reconstrucción, los latidos entre 08:01:31 y 08:06:59. Se pierden por diseño: solo existe lo copiado en el último respaldo.
 
@@ -62,8 +64,8 @@ El punto de recuperación es el momento en que Velero **copió el volumen** (07:
 
 | Objetivo | Declarado | Medido | Brecha |
 |---|---|---|---|
-| RTO | ≤ 20 min | 7 min 49 s | Se cumple con 12 min de margen. Ese margen depende de que las imágenes se descarguen rápido y de que no ocurra el reintento de la restauración (sumaría ~2 min). |
-| RPO | ≤ 60 min | 3 min 57 s (datos), 5 min 28 s (clúster) | Se cumple. El valor medido es bajo porque el desastre ocurrió minutos después del respaldo; el peor caso sigue siendo ~60 min + la duración del respaldo. |
+| RTO | ≤ 20 min | 7 min 49 s y 10 min 24 s | Se cumple con 12 min de margen. Ese margen depende de que las imágenes se descarguen rápido y de que no ocurra el reintento de la restauración (sumaría ~2 min). |
+| RPO | ≤ 60 min | 3 min 57 s (datos); 5 min 28 s y 35 min 49 s (clúster) | Se cumple. El valor medido es bajo porque el desastre ocurrió minutos después del respaldo; el peor caso sigue siendo ~60 min + la duración del respaldo. |
 | Pérdida de nodo | 0 fallos | 0 / 137 | Se cumple, pero solo con el nodo que no aloja PostgreSQL. |
 
 Plan para cerrar las brechas y los puntos únicos de fallo:
