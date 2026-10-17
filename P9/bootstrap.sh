@@ -51,12 +51,11 @@ echo "ok"
 source "$CONF/r2.env"
 export TF_VAR_r2_account_id="$R2_ACCOUNT_ID"
 export TF_VAR_r2_bucket="${R2_BUCKET:-sa-p9-velero}"
-export TF_VAR_r2_access_key="$(awk -F= '/aws_access_key_id/{print $2}' "$CONF/credentials-velero" | tr -d ' ')"
-export TF_VAR_r2_secret_key="$(awk -F= '/aws_secret_access_key/{print $2}' "$CONF/credentials-velero" | tr -d ' ')"
+export TF_VAR_r2_archivo_credenciales="$CONF/credentials-velero"
 
 # ---------------------------------------------------------------------
 etapa "2/6 terraform init (backend remoto HCP Terraform)"
-terraform -chdir="$TF" init -input=false -no-color >/dev/null
+terraform -chdir="$TF" init -input=false -no-color -reconfigure >/dev/null
 echo "ok"
 
 # ---------------------------------------------------------------------
@@ -115,7 +114,7 @@ echo "$(ts) api-gateway /health: $salud"
 
 # Si hubo restauracion, confirmar que el VOLUMEN se restauro (termina
 # despues de que ArgoCD entrega el Secret de PostgreSQL). Si no, repetirla
-# automaticamente (procedimiento B del RUNBOOK) sin intervencion manual.
+# automaticamente (procedimiento B del RUNBOOK) sin intervencion del operador.
 restore=$(kubectl --context "$CTX" -n velero get restores -o jsonpath='{range .items[*]}{.metadata.creationTimestamp}{" "}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep ' dr-' | sort | tail -1 | awk '{print $2}')
 if [ -n "$restore" ]; then
   for _ in $(seq 1 60); do

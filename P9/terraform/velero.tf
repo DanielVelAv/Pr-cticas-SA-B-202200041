@@ -16,12 +16,9 @@ resource "kubernetes_secret_v1" "velero_r2" {
     name      = "velero-r2"
     namespace = kubernetes_namespace_v1.velero.metadata[0].name
   }
+  # El archivo del operador se copia tal cual al Secret que lee Velero.
   data = {
-    cloud = <<-EOT
-      [default]
-      aws_access_key_id=${var.r2_access_key}
-      aws_secret_access_key=${var.r2_secret_key}
-    EOT
+    cloud = file(pathexpand(var.r2_archivo_credenciales))
   }
 }
 

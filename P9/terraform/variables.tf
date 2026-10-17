@@ -18,8 +18,8 @@ variable "workers" {
 }
 
 # ---------------------------------------------------------------------
-# Respaldos (Cloudflare R2). Las llaves llegan por TF_VAR_* desde
-# bootstrap.sh (~/.config/sa-p9/); nunca se escriben en el repositorio.
+# Respaldos (Cloudflare R2). Las credenciales se leen del archivo del
+# operador (~/.config/sa-p9/credentials-velero); nunca estan en el repo.
 # ---------------------------------------------------------------------
 variable "r2_account_id" {
   type = string
@@ -30,14 +30,10 @@ variable "r2_bucket" {
   default = "sa-p9-velero"
 }
 
-variable "r2_access_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "r2_secret_key" {
-  type      = string
-  sensitive = true
+variable "r2_archivo_credenciales" {
+  description = "Archivo de credenciales de R2 (formato AWS, perfil default) en la maquina del operador."
+  type        = string
+  default     = "~/.config/sa-p9/credentials-velero"
 }
 
 variable "velero_prefijo" {

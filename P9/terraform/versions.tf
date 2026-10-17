@@ -1,10 +1,11 @@
-# Estado remoto en HCP Terraform (org Sa9, workspace sa-p9).
-# Execution mode = Local: el apply corre en la maquina del operador
-# (kind es local), HCP solo guarda el estado y aplica el BLOQUEO.
+# Estado remoto en HCP Terraform (org Sa9, workspace sa-p9) con el backend
+# "remote". Execution mode = Local: el apply corre en la maquina del
+# operador (kind es local); HCP guarda el estado y aplica el BLOQUEO.
 terraform {
   required_version = ">= 1.9.0"
 
-  cloud {
+  backend "remote" {
+    hostname     = "app.terraform.io"
     organization = "Sa9"
     workspaces {
       name = "sa-p9"

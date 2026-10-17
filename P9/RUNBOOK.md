@@ -24,7 +24,7 @@ Todos los comandos se ejecutan desde la raíz del repositorio de código.
 | Imágenes | `ghcr.io/danielvelav/sa-p9/{api-gateway,ms-auth}:v1.0.0` (públicas) | Kubernetes |
 | Respaldos de datos | Cloudflare R2, bucket `sa-p9-velero`, carpeta `sa-p9/` | Velero |
 | Credenciales del operador | gestor de contraseñas del equipo → se copian a `~/.config/sa-p9/` | bootstrap |
-| Copia fuera de línea de la llave de Sealed Secrets | gestor de contraseñas + `~/.config/sa-p9/sealed-secrets-key.backup.pem` | sección D |
+| Llave de Sealed Secrets (3 copias) | 1) estado remoto HCP · 2) respaldo diario de Velero en R2 (`sa-p9-llave-sealed-secrets`) · 3) copia fuera de línea en el gestor de contraseñas | bootstrap / sección D |
 
 Lo que **no** sobrevive (aceptado): eventos, logs, historial de AnalysisRuns y
 los datos escritos después del último respaldo horario.
@@ -41,12 +41,9 @@ los datos escritos después del último respaldo horario.
 | 1.4 | Credenciales de R2 | crear `~/.config/sa-p9/credentials-velero` y `~/.config/sa-p9/r2.env` (formato abajo), `chmod 600` | `ls -l ~/.config/sa-p9` muestra ambos archivos |
 | 1.5 | RAM libre | al menos ~5 GiB libres; borrar otros clústeres kind | `free -h` |
 
-```ini
-# ~/.config/sa-p9/credentials-velero
-[default]
-aws_access_key_id=<Access Key ID del token de R2>
-aws_secret_access_key=<Secret Access Key del token de R2>
-```
+`~/.config/sa-p9/credentials-velero` es un archivo de credenciales con formato de AWS: una
+línea `[default]` y debajo las claves `aws_access_key_id` y `aws_secret_access_key`, cada una
+seguida de `=` y del valor del token de R2 (Access Key ID y Secret Access Key).
 ```bash
 # ~/.config/sa-p9/r2.env
 R2_ACCOUNT_ID=<Account ID de Cloudflare>
@@ -203,8 +200,21 @@ Con el clúster funcionando. Restaura **solo** PostgreSQL desde un respaldo; el 
 **D.1 El workspace de HCP se perdió** (el estado contenía la llave):
 1. Crear de nuevo organización `Sa9` y workspace `sa-p9` (CLI-driven, *Execution Mode: Local*), `terraform login`.
 2. Ejecutar `./P9/bootstrap.sh`. Terraform genera una llave **nueva** que no abre los SealedSecret del repo.
-3. Cargar la llave anterior desde la copia fuera de línea, también marcada como activa
-   (el controlador prueba todas las llaves activas al descifrar):
+3. Cargar la llave anterior **con otro nombre**, también marcada como activa (el controlador
+   prueba todas las llaves activas al descifrar). Hay dos fuentes:
+
+   **Opción A, respaldo de Velero en R2** (Schedule `sa-p9-llave-sealed-secrets`, diario, 7 días):
+   ```bash
+   velero --kubecontext kind-sa-p9 backup get | grep sa-p9-llave-sealed-secrets   # elegir el más reciente Completed
+   velero --kubecontext kind-sa-p9 backup download <backup> -o llave.tar.gz && tar xzf llave.tar.gz
+   jq '.metadata={name:"sealed-secrets-key-recuperada",namespace:"kube-system",labels:{"sealedsecrets.bitnami.com/sealed-secrets-key":"active"}}' \
+     resources/secrets/namespaces/kube-system/sealed-secrets-key-sa-p9.json | kubectl --context kind-sa-p9 apply -f -
+   rm -rf llave.tar.gz resources metadata
+   kubectl --context kind-sa-p9 -n kube-system rollout restart deploy/sealed-secrets-controller
+   ```
+   No usar `velero restore` para esto: chocaría con el Secret del mismo nombre que crea Terraform.
+
+   **Opción B, copia fuera de línea** (gestor de contraseñas):
    ```bash
    kubectl --context kind-sa-p9 -n kube-system create secret tls sealed-secrets-key-recuperada \
      --cert=<copia>/sealed-secrets-cert.backup.pem --key=<copia>/sealed-secrets-key.backup.pem
