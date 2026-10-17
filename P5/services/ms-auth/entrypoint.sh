@@ -39,4 +39,4 @@ echo "[ms-auth] aplicando esquema y semilla..."
 # 'relation "usuarios" does not exist'.
 node src/seed.js
 
-exec node src/server.js
+exec node --require ./src/telemetria.js src/server.js

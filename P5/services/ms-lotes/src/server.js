@@ -3,9 +3,17 @@ const { createHandler } = require("graphql-http/lib/use/express");
 const { inicializar } = require("./db");
 const repositorio = require("./repositorio");
 const { schema, root } = require("./graphql");
+const { metrics } = require("@opentelemetry/api");
+const { logger, registrarPeticiones } = require("./logger");
+
+// Metrica de negocio (Practica 10): lotes de pagos cargados y su monto.
+const meter = metrics.getMeter("ms-lotes");
+const lotesCreados = meter.createCounter("lotes_creados", { description: "Lotes de pagos cargados" });
+const montoLotes = meter.createCounter("lotes_monto_quetzales", { description: "Monto total de los lotes cargados (Q)" });
 
 const app = express();
 app.use(express.json());
+app.use(registrarPeticiones());
 const PUERTO = Number.parseInt(process.env.PORT || "3002", 10);
 
 app.get("/health", (req, res) => res.json({ servicio: "ms-lotes", estado: "ok" }));
@@ -35,8 +43,14 @@ app.post("/lotes", async (req, res) => {
     }
     // El Gateway ya valido el token y propaga la identidad por encabezado.
     const usuarioId = req.headers["x-usuario-id"] || "anonimo";
-    res.status(201).json(await repositorio.crearLote({ nombreArchivo, usuarioId, transacciones }));
-  } catch (e) { res.status(500).json({ errores: [e.message] }); }
+    const lote = await repositorio.crearLote({ nombreArchivo, usuarioId, transacciones });
+    lotesCreados.add(1);
+    montoLotes.add(Number(lote.monto_total) || 0);
+    res.status(201).json(lote);
+  } catch (e) {
+    logger.error({ error: e.message, codigo: e.code }, "error creando el lote");
+    res.status(500).json({ errores: [e.message] });
+  }
 });
 
 // Usado por ms-aprobaciones para marcar el lote como aprobado.
@@ -53,6 +67,6 @@ app.all("/graphql", createHandler({ schema, rootValue: root }));
 
 inicializar()
   .then(() => app.listen(PUERTO, "0.0.0.0", () => {
-    console.log(`[ms-lotes] REST y GraphQL en el puerto ${PUERTO}`);
+    logger.info({ puerto: PUERTO }, "ms-lotes escuchando (REST y GraphQL)");
   }))
-  .catch((e) => { console.error("[ms-lotes]", e.message); process.exit(1); });
+  .catch((e) => { logger.fatal({ error: e.message }, "ms-lotes no pudo iniciar"); process.exit(1); });

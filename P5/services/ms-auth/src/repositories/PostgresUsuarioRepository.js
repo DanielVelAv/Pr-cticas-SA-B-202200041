@@ -32,8 +32,13 @@ class PostgresUsuarioRepository extends UsuarioRepository {
   }
 
   async obtenerPorCorreo(correo) {
+    // Fallo inducido de la Practica 10 (recorrido sintoma -> causa): con
+    // FALLO_BD=true el login consulta una tabla que no existe, como lo
+    // haria una version con una migracion incompleta. El error queda en
+    // el span de pg de la traza y en el registro JSON con su trace_id.
+    const tabla = process.env.FALLO_BD === "true" ? "usuarios_v2" : "usuarios";
     const resultado = await pool.query(
-      "SELECT * FROM usuarios WHERE email_index = $1",
+      `SELECT * FROM ${tabla} WHERE email_index = $1`,
       [this.#indexer.indexar(correo)],
     );
     return resultado.rows[0] ? this.#aDominio(resultado.rows[0]) : null;

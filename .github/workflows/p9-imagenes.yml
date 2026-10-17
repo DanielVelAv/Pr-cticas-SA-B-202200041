@@ -1,15 +1,17 @@
-name: P9 - Imagenes en GHCR
+name: P9/P10 - Imagenes en GHCR
 
 # P9 (recuperacion ante desastres): tras destruir el cluster, el bootstrap
 # debe poder descargar las imagenes de un registro EXTERNO. Antes vivian
 # solo en el Docker local (kind load) y se perdian con la maquina.
-# Publica unicamente los servicios que P9 despliega (api-gateway y ms-auth).
+# Publica los servicios que P9/P10 despliegan (api-gateway, ms-auth y ms-lotes,
+# instrumentados con OpenTelemetry en la Practica 10).
 on:
   push:
     branches: [main]
     paths:
       - "P5/services/api-gateway/**"
       - "P5/services/ms-auth/**"
+      - "P5/services/ms-lotes/**"
       - ".github/workflows/p9-imagenes.yml"
   workflow_dispatch:
     inputs:
@@ -24,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        servicio: [api-gateway, ms-auth]
+        servicio: [api-gateway, ms-auth, ms-lotes]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +46,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        servicio: [api-gateway, ms-auth]
+        servicio: [api-gateway, ms-auth, ms-lotes]
     steps:
       - uses: actions/checkout@v4
 

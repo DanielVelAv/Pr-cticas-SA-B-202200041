@@ -19,4 +19,4 @@ COPY --chown=node:node src ./src
 
 USER node
 EXPOSE 3002
-CMD ["node", "src/server.js"]
+CMD ["node", "--require", "./src/telemetria.js", "src/server.js"]

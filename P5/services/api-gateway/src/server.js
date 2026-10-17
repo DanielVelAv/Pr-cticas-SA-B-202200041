@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const { verificarToken, requerirRol } = require("./autenticacion");
+const { logger, registrarPeticiones } = require("./logger");
 
 const app = express();
 const PUERTO = Number.parseInt(process.env.PORT || "8080", 10);
@@ -18,6 +19,21 @@ const DESTINOS = {
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
+app.use(registrarPeticiones());
+
+// Fallo inducido de la Practica 10 (distinto al de P8): con TASA_FALLO
+// entre 0 y 1, esa fraccion de las peticiones REALES de usuarios a /api
+// responde 500. Solo afecta a la version que lo tenga activado, asi que
+// en un canary lo detecta el analisis por metricas (tasa de error del
+// canary en Prometheus) y Argo Rollouts revierte sin intervencion.
+const TASA_FALLO = Number.parseFloat(process.env.TASA_FALLO || "0");
+app.use("/api", (req, res, next) => {
+  if (TASA_FALLO > 0 && Math.random() < TASA_FALLO) {
+    logger.error({ ruta: req.originalUrl, tasa_fallo: TASA_FALLO }, "fallo inducido: el gateway rechaza la peticion");
+    return res.status(500).json({ errores: ["Error interno del Gateway."] });
+  }
+  return next();
+});
 
 app.get("/health", (req, res) => {
   // Fallo inducido controlado (Practica 8): SIEMPRE responde 200, para
@@ -92,6 +108,5 @@ app.use((req, res) =>
 );
 
 app.listen(PUERTO, "0.0.0.0", () => {
-  console.log(`[api-gateway] escuchando en el puerto ${PUERTO}`);
-  console.log("[api-gateway] destinos:", DESTINOS);
+  logger.info({ puerto: PUERTO, destinos: DESTINOS, tasa_fallo: TASA_FALLO }, "api-gateway escuchando");
 });

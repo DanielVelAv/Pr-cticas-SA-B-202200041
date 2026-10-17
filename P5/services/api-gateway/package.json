@@ -3,13 +3,22 @@
   "version": "1.0.0",
   "description": "API Gateway que enruta hacia los cuatro microservicios",
   "main": "src/server.js",
-  "scripts": { "start": "node src/server.js", "test": "jest --ci" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --ci"
+  },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.81.2",
+    "@opentelemetry/exporter-prometheus": "^0.223.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.223.0",
+    "@opentelemetry/sdk-node": "^0.223.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "http-proxy-middleware": "^3.0.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^10.4.0"
   },
   "devDependencies": {
     "jest": "^29.7.0"

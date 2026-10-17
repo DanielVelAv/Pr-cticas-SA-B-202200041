@@ -7,6 +7,7 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(require("./logger").registrarPeticiones());
 
 app.use("/auth", rutas);
 app.get("/health", (req, res) => res.status(200).json({ servicio: "ms-auth", estado: "ok" }));
