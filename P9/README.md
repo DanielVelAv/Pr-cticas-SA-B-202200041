@@ -13,7 +13,7 @@ y un único comando lo reconstruye desde cero, restaurando los datos del último
 | Repositorio GitOps | https://github.com/DanielVelAv/sa-platform-gitops |
 | Aplicación raíz en ArgoCD | `sa-p9-root`, namespace `argocd` (app-of-apps sobre la carpeta [`apps/`](https://github.com/DanielVelAv/sa-platform-gitops/tree/main/apps)) |
 | Punto de entrada del bootstrap | [`P9/bootstrap.sh`](bootstrap.sh) (`./P9/bootstrap.sh` desde la raíz del repositorio) |
-| Backend remoto de Terraform | HCP Terraform (bloque `cloud {}`), organización `Sa9`, workspace `sa-p9`, execution mode *Local*; bloqueo de estado nativo de HCP ([evidencia](evidencias/bloqueo-estado-20261015T074245Z.log)) |
+| Backend remoto de Terraform | `backend "remote"` → HCP Terraform (`app.terraform.io`), organización `Sa9`, workspace `sa-p9`, execution mode *Local*; bloqueo de estado nativo de HCP ([evidencia](evidencias/bloqueo-estado-20261015T074245Z.log)) |
 | Schedule de Velero | `sa-p9-horario` (namespace `velero`, cada hora `0 * * * *`, retención 168 h; la llave de Sealed Secrets aparte en `sa-p9-llave-sealed-secrets`, diario) → Cloudflare R2, bucket `sa-p9-velero`, prefijo `sa-p9/` ([manifiesto](https://github.com/DanielVelAv/sa-platform-gitops/blob/main/velero/schedule.yaml)) |
 | Reconstrucción cronometrada | [`P9/evidencias/reconstruccion-20261016T080658Z.log`](evidencias/reconstruccion-20261016T080658Z.log) (detalle del bootstrap: [`bootstrap-20261016T080704Z.log`](evidencias/bootstrap-20261016T080704Z.log)) |
 | Restauración de datos | [`P9/evidencias/restauracion-20261016T070246Z.log`](evidencias/restauracion-20261016T070246Z.log) |
