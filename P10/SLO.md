@@ -48,10 +48,11 @@ Manifiesto: [`observabilidad/slo-reglas.yaml`](https://github.com/DanielVelAv/sa
 | `slo:objetivo:ratio` | 0.995 y 0.99 |
 | `slo:presupuesto_consumido:ratio` | fracción mala de 7 d ÷ presupuesto (1 = agotado) |
 | `slo:presupuesto_restante:ratio` | 1 − consumido (se muestra en el tablero) |
+| `slo:burn_rate:5m`, `slo:burn_rate:1h` | tasa de quemado: fracción mala ÷ presupuesto (1 = se agota justo al final de la ventana) |
 
 ## Alertas por consumo del presupuesto
 
-Patrón multi-ventana del libro *SRE Workbook*: se dispara si la tasa de quemado supera **14.4×**
+Patrón multi-ventana del libro *SRE Workbook*: `slo:burn_rate:1h > 14.4 and slo:burn_rate:5m > 14.4`, es decir, se dispara si la tasa de quemado supera **14.4×**
 en **1 h y en 5 min** a la vez. A 14.4× el presupuesto de 7 días se agota en 168 h / 14.4 ≈ **11.7 h**
 (se consume ~8.6 % por hora): si nadie actúa, la promesa de la semana se incumple el mismo día.
 - La ventana de 1 h evita alertar por picos de segundos (no es un umbral instantáneo).

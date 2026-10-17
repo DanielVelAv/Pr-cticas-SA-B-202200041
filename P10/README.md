@@ -41,6 +41,8 @@ GitOps (ArgoCD) sobre el mismo clúster de la P9.
 (`podTemplateHashValue: Latest`). El PodMonitor lo copia a cada serie, así que se mide **solo** el
 pod canary.
 
+El análisis corre **dos veces**: con el 20 % y con el 50 % del tráfico; si cualquiera falla, Argo Rollouts revierte.
+
 **Tasa de error** (éxito si `result[0] < 0.05`; 4 mediciones cada 30 s, falla con más de 1):
 ```promql
 (sum(rate(http_server_request_duration_count{namespace="sa-p9-produccion", servicio="api-gateway", rollouts_pod_template_hash="{{args.canary-hash}}", http_route=~"/api.*", http_response_status_code=~"5.."}[1m])) or vector(0))
