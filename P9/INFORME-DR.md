@@ -64,8 +64,8 @@ El punto de recuperación es el momento en que Velero **copió el volumen** (07:
 
 | Objetivo | Declarado | Medido | Brecha |
 |---|---|---|---|
-| RTO | ≤ 20 min | 7 min 49 s y 10 min 24 s | Se cumple con 12 min de margen. Ese margen depende de que las imágenes se descarguen rápido y de que no ocurra el reintento de la restauración (sumaría ~2 min). |
-| RPO | ≤ 60 min | 3 min 57 s (datos); 5 min 28 s y 35 min 49 s (clúster) | Se cumple. El valor medido es bajo porque el desastre ocurrió minutos después del respaldo; el peor caso sigue siendo ~60 min + la duración del respaldo. |
+| RTO | ≤ 20 min | 7 min 49 s y 10 min 24 s | Se cumple en ambas corridas, con 10–12 min de margen. La variación de ~2,5 min entre corridas sale del arranque de ArgoCD y de las descargas de imágenes; el reintento automático de la restauración sumaría ~2 min más. |
+| RPO | ≤ 60 min | 3 min 57 s (datos); 5 min 28 s y 35 min 49 s (clúster) | Se cumple. El RPO real depende de cuándo ocurre el desastre: 5 min en la 1.ª corrida (minutos después del respaldo) y 36 min en la 2.ª. El peor caso sigue siendo ~60 min + la duración del respaldo. |
 | Pérdida de nodo | 0 fallos | 0 / 137 | Se cumple, pero solo con el nodo que no aloja PostgreSQL. |
 
 Plan para cerrar las brechas y los puntos únicos de fallo:
