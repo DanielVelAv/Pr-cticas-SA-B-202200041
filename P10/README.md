@@ -19,7 +19,7 @@ GitOps (ArgoCD) sobre el mismo clúster de la P9.
 | Consultas del análisis | ver [Consultas PromQL del canary](#consultas-promql-del-canary) (tasa de error < 5 % y p95 < 1 s del pod canary) |
 | SLO declarados | **Disponibilidad 99.5 %** sin 5xx, ventana **7 días** · **Latencia 99 %** en < 1 s, ventana **7 días** ([`SLO.md`](SLO.md)) |
 | Reglas de alerta | PrometheusRule `slo-sa-platform` — [`observabilidad/slo-reglas.yaml`](https://github.com/DanielVelAv/sa-platform-gitops/blob/main/observabilidad/slo-reglas.yaml) |
-| Tablero | [`P10/tablero/tablero-operacion.json`](tablero/tablero-operacion.json) (captura: [`tablero/captura-tablero.png`](tablero/captura-tablero.png)) |
+| Tablero | [`P10/tablero/tablero-operacion.json`](tablero/tablero-operacion.json) |
 | Reversión por métricas | AnalysisRun **`sa-platform-api-gateway-79d84bb5c9-3-2`** (Failed) del Rollout **`sa-platform-api-gateway`** — [evidencia](evidencias/canary-20261017T064500Z.log) |
 | Recorrido síntoma a causa | [`evidencias/sintoma-causa-20261017T070125Z.log`](evidencias/sintoma-causa-20261017T070125Z.log): alerta → traza (span `pg.query` con `relation "usuarios_v2" does not exist`) → registro en Loki con el mismo `trace_id` en **< 1 s** (automatizado); detección: primera señal 21 s, alerta 7 min 40 s ([corrida 1](evidencias/sintoma-causa-20261017T064800Z-corrida1.log)) |
 | Video demostrativo | PENDIENTE — URL y minutaje abajo |
